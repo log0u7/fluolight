@@ -50,13 +50,14 @@ Board FQBN: `fluo:avr:fluoeth`
 ```bash
 make          # show available targets
 make compile  # compile only
-make flash    # compile + upload to /dev/ttyACM0
+make flash    # compile + upload (port auto-detected)
 make monitor  # open serial monitor at 115200 baud
 make server   # run the local test server
 make board    # list connected boards
 ```
 
-Override port or FQBN if needed:
+The serial port is auto-detected from `arduino-cli board list` (FQBN
+match, then VID fallback). Override if needed:
 
 ```bash
 make flash PORT=/dev/ttyACM1
