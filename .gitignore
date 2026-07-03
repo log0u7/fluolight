@@ -1,3 +1,7 @@
 __pycache__/
 *.pyc
 build/
+# Local pipeline server config (contains repo paths, keep out of version control)
+targets.json
+# Local environment variables (tokens, secrets)
+.env
