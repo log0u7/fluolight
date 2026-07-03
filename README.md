@@ -4,14 +4,14 @@ FluoLight is an Arduino-based smart lighting controller for networked status ind
 
 ## Overview
 
-This project is designed to create a visual indicator system that can be controlled remotely through a network interface. The device connects to a server via Ethernet, periodically polls for status updates, and displays corresponding colored lights on an LED strip. It's particularly useful for room status indicators, availability displays, or any application requiring visual status feedback.
+This project is designed to create a visual indicator system that can be controlled remotely through a network interface. The device connects to a server via Ethernet, periodically polls for status updates, and displays corresponding colored lights on an LED strip. It is particularly useful for room status indicators, availability displays, or any application requiring visual status feedback.
 
 ## Hardware Requirements
 
-- Arduino-compatible board (FLUOboard specific compatibility)
-- Ethernet shield or built-in Ethernet
-- Addressable LED strip (NeoPixel compatible)
-- I2C EEPROM (for storing MAC address if using automatic MAC mode)
+- FLUOboard (Fluo Technology, ATmega32U4 with built-in Ethernet)
+- Addressable LED strip (NeoPixel compatible, WS2812)
+- I2C EEPROM (for storing MAC address when using automatic MAC mode)
+- USB cable with data lines (not a charge-only cable)
 
 ## Features
 
@@ -23,9 +23,56 @@ This project is designed to create a visual indicator system that can be control
 - Detailed serial logging with configurable verbosity levels
 - LED effects including color wipes, blinks, and fades
 
+## Build
+
+### Requirements
+
+- [arduino-cli](https://arduino.github.io/arduino-cli/) installed and in `PATH`
+- FLUOboard core (`fluo:avr`) installed (see Board Setup below)
+- Required libraries installed (see Dependencies below)
+- `python3` for the test server
+
+### Board Setup
+
+Add the FLUOboard package URL to arduino-cli once:
+
+```bash
+arduino-cli config add board_manager.additional_urls \
+  https://raw.githubusercontent.com/VashTheProgrammer/FLUOboard/master/package_fluo_index.json
+arduino-cli core update-index
+arduino-cli core install fluo:avr
+```
+
+Board FQBN: `fluo:avr:fluoeth`
+
+### Common commands (via Makefile)
+
+```bash
+make          # show available targets
+make compile  # compile only
+make flash    # compile + upload to /dev/ttyACM0
+make monitor  # open serial monitor at 115200 baud
+make server   # run the local test server
+make board    # list connected boards
+```
+
+Override port or FQBN if needed:
+
+```bash
+make flash PORT=/dev/ttyACM1
+```
+
+### Manual arduino-cli commands
+
+```bash
+arduino-cli compile --fqbn fluo:avr:fluoeth .
+arduino-cli upload  -p /dev/ttyACM0 --fqbn fluo:avr:fluoeth .
+arduino-cli monitor -p /dev/ttyACM0 -c baudrate=115200
+```
+
 ## Configuration
 
-All configuration is done through preprocessor definitions in the `fluolight.ino` file. Below are the available configuration options:
+All configuration is done through preprocessor definitions in `fluolight.ino`.
 
 ### Serial Output Verbosity
 
@@ -33,20 +80,24 @@ All configuration is done through preprocessor definitions in the `fluolight.ino
 #define VERBOSE 2
 ```
 
-- `0` - No output (Hardened Production Environments)
-- `1` - Errors only (Production Environments) - Memory impact: ~+1%
-- `2` - Errors, Warnings, Info with sync (Production Debugging) - Memory impact: ~+9%
-- `3` - All output including Debug (Development Environments) - Memory impact: ~+11%
+- `0` - No output (hardened production)
+- `1` - Errors only (production) - flash impact: ~+1%
+- `2` - Errors, warnings, info with serial sync (debug) - flash impact: ~+9%
+- `3` - All output including debug - flash impact: ~+11%
+
+Note: when `VERBOSE > 1`, the board waits for a serial connection before starting (`while(!Serial)`). Set `VERBOSE` to `0` or `1` for standalone deployment without a PC.
 
 ### Server Configuration
 
 ```c
-#define SERVER "142.56.233.35.bc.googleusercontent.com"
-#define SERVERPORT 80
+#define SERVER "your-server-address"
+#define SERVERPORT 8080
 ```
 
 - `SERVER` - FQDN or IP address of the HTTP server
-- `SERVERPORT` - Port number for the HTTP server
+- `SERVERPORT` - Port number of the HTTP server (default: `8080`, matches `test_server.py`)
+
+The board makes `GET /lights/<mac>` requests to this server every `HTTP_REQ_INTERVAL` ms and expects a response body containing `<N>` where `N` is a digit 0-9 (see Status Display Codes).
 
 ### MAC Address Configuration
 
@@ -56,9 +107,9 @@ All configuration is done through preprocessor definitions in the `fluolight.ino
 ```
 
 - `MACSET`
-  - `0` - Auto (read from EEPROM) - Memory impact: ~+5%
-  - `1` - Manual (use the MAC_ADDRESS defined below)
-- `MAC_ADDRESS` - Six-byte MAC address (only used if MACSET=1)
+  - `0` - Auto (read from I2C EEPROM) - flash impact: ~+5%
+  - `1` - Manual (use `MAC_ADDRESS` below)
+- `MAC_ADDRESS` - Six-byte MAC address (only used if `MACSET=1`)
 
 ### Network Configuration
 
@@ -71,12 +122,10 @@ All configuration is done through preprocessor definitions in the `fluolight.ino
 ```
 
 - `DHCP`
-  - `0` - Auto (use DHCP) - Memory impact: ~+13%
+  - `0` - Auto (use DHCP) - flash impact: ~+13%
   - `1` - Manual (use static IP configuration below)
-- `IP_ADDRESS` - Static IP address (only used if DHCP=1)
-- `IP_SUBNET` - Subnet mask (only used if DHCP=1)
-- `IP_GATEWAY` - Gateway IP (only used if DHCP=1)
-- `IP_DNS` - DNS server IP (only used if DHCP=1)
+
+Note: with `DHCP=0`, `Ethernet.begin()` blocks for up to ~60s at boot if no network cable is connected.
 
 ### External Link Check
 
@@ -87,25 +136,9 @@ All configuration is done through preprocessor definitions in the `fluolight.ino
 ```
 
 - `EXT_LINK_CHECK`
-  - `0` - Auto (Use DNS Server provided by DHCP) - Memory impact: ~+1%
-  - `1` - Manual (Use server defined in EXT_LINK_SERVER) - Memory impact: ~+1%
+  - `0` - Auto (use DNS server from DHCP) - flash impact: ~+1%
+  - `1` - Manual (use `EXT_LINK_SERVER`) - flash impact: ~+1%
   - `2` - Disabled
-- `EXT_LINK_SERVER` - External server IP for connectivity testing (only used if EXT_LINK_CHECK=1)
-- `EXT_LINK_PORT` - Port number for external connectivity tests (typically 53 for DNS)
-
-### Proxy Configuration
-
-```c
-#define PROXYSET 0
-#define PROXY "192.168.0.253"
-#define PROXYPORT 8080
-```
-
-- `PROXYSET`
-  - `0` - No proxy
-  - `1` - Use proxy server
-- `PROXY` - Proxy server address (only used if PROXYSET=1)
-- `PROXYPORT` - Proxy server port (only used if PROXYSET=1)
 
 ### Watchdog Configuration
 
@@ -116,10 +149,9 @@ All configuration is done through preprocessor definitions in the `fluolight.ino
 
 - `WATCHDOG`
   - `0` - Disabled
-  - `1` - Enabled
-- `WATCHDOG_TIMER` - Watchdog timeout value (e.g., WDTO_8S for 8 seconds)
+  - `1` - Enabled (hardware watchdog via `avr/wdt.h`)
 
-### Reset On Failure Configuration
+### Reset On Failure
 
 ```c
 #define RESET_ON_FAIL   0
@@ -128,12 +160,12 @@ All configuration is done through preprocessor definitions in the `fluolight.ino
 ```
 
 - `RESET_ON_FAIL`
-  - `0` - Disabled (you should enable WATCHDOG instead)
-  - `1` - Reset on link failure - Memory impact: ~+1%
-  - `2` - Reset on link, DHCP, or external link failures after MAX_RETRY attempts - Memory impact: ~+2%
-  - `3` - Reset on all errors after MAX_RETRY attempts - Memory impact: ~+2%
-- `REBOOT_TIMEOUT` - Time in ms to wait before rebooting (for controlled restart)
-- `MAX_RETRY` - Number of failures to allow before triggering a reset
+  - `0` - Disabled
+  - `1` - Reset on link failure - flash impact: ~+1%
+  - `2` - Reset on link, DHCP, or external link failures after `MAX_RETRY` attempts - flash impact: ~+2%
+  - `3` - Reset on all errors after `MAX_RETRY` attempts - flash impact: ~+2%
+- `REBOOT_TIMEOUT` - Time in ms before a long reset triggers
+- `MAX_RETRY` - Number of consecutive failures before reset
 
 ### LED Strip Configuration
 
@@ -144,12 +176,6 @@ All configuration is done through preprocessor definitions in the `fluolight.ino
 #define FADE_SPEED 5
 #define WIPE_SPEED 50
 ```
-
-- `LED_PIN` - Arduino pin connected to the LED strip data line
-- `LED_COUNT` - Number of LEDs in the strip
-- `BRIGHTNESS` - LED brightness (0-255)
-- `FADE_SPEED` - Speed of fading effects in ms
-- `WIPE_SPEED` - Speed of wipe effects in ms
 
 ### Timing Intervals
 
@@ -163,76 +189,107 @@ All configuration is done through preprocessor definitions in the `fluolight.ino
 #define MAIN_LOOP_INTERVAL        0
 ```
 
-- `LINK_CHECK_INTERVAL` - Time between Ethernet link checks (ms)
-- `EVENT_DISP_INTERVAL` - Time between event dispatching (ms)
-- `DHCP_STATUS_INTERVAL` - Time between DHCP lease renewals (ms)
-- `HTTP_READ_INTERVAL` - Time between processing HTTP responses (ms)
-- `HTTP_REQ_INTERVAL` - Time between HTTP requests to the server (ms)
-- `EXT_LINK_CHECK_INTERVAL` - Time between external connectivity checks (ms)
-- `MAIN_LOOP_INTERVAL` - Delay at the end of each main loop iteration (ms)
-
 ## Status Display Codes
 
-The device interprets numeric status codes received from the server:
+The device interprets numeric codes received from the server (inside `<N>`):
 
-- `0` - Server error (blinking fade red)
-- `1` - Available + Vacant (green)
-- `2` - Available + Occupied (orange)
-- `3` - Booked + Vacant (pink)
-- `4` - Booked + Occupied (red)
-- `5` - Soon in use + Vacant (orange)
-- `6` - Soon in use + Occupied (blinking orange)
-- `7` - Blue
-- `8` - White
-- `9` - Off
+| Code | Meaning | LED effect |
+|------|---------|------------|
+| `0` | Server error | Blinking fade red |
+| `1` | Available + vacant | Green |
+| `2` | Available + occupied | Orange |
+| `3` | Booked + vacant | Pink |
+| `4` | Booked + occupied | Red |
+| `5` | Soon in use + vacant | Orange |
+| `6` | Soon in use + occupied | Blinking orange |
+| `7` | - | Blue |
+| `8` | - | White |
+| `9` | - | Off |
 
 ## Protocol
 
-The device makes HTTP requests to the server in the following format:
+The device makes HTTP requests in the following format:
 
 ```
-GET /lights/[MAC_ADDRESS] HTTP/1.1
-Host: [SERVER]
+GET /lights/<mac_address> HTTP/1.1
+Host: <SERVER>
 Connection: close
 ```
 
-The server should respond with a single digit (0-9) inside angle brackets, e.g., `<5>`, which corresponds to one of the status display codes.
+The server must respond with a body containing `<N>` where `N` is a digit 0-9, for example `<1>`.
+
+## Test Server
+
+A local test server is provided to validate the LED display without a production server.
+
+```bash
+python3 test_server.py
+# or
+make server
+```
+
+The server listens on `0.0.0.0:8080` and cycles automatically through all 10 status codes (one per request received from the board). Each `GET /lights/<mac>` request advances the cycle by one step.
+
+Make sure port 8080 is open in your firewall:
+
+```bash
+sudo ufw allow from 192.168.1.0/24 to any port 8080 proto tcp
+```
 
 ## Installation
 
-1. Configure the device by editing the define statements in `fluolight.ino`
-2. Upload the sketch to your Arduino board
-3. Connect the board to your network
-4. The LED strip will display blue during startup
-5. Once connected, the device will begin polling the server for status updates
+1. Install arduino-cli and the FLUOboard core (see Board Setup above).
+2. Install the required libraries (see Dependencies below).
+3. Configure `fluolight.ino` (server address, port, MAC mode, network settings).
+4. Compile and upload: `make flash`
+5. Connect the board to your network (Ethernet cable required at boot when using DHCP).
+6. Open the serial monitor to verify startup: `make monitor`
+7. The LED strip displays blue during startup, then follows server responses.
 
 ## Troubleshooting
 
-- If the LED displays a pulsing red color, there's a hardware or network error
-- The serial monitor provides detailed information based on the VERBOSE level
-- Check your network settings if the device cannot connect
-- Verify server connectivity and that it's returning valid status codes
+- **Board not detected at all** (`/dev/ttyACM0` missing): the USB cable is charge-only (no data lines). Replace with a full USB cable.
+- **No serial output after connect**: with `VERBOSE > 1` the board waits for a serial connection before running. Open the monitor then press the reset button on the board.
+- **LED stuck on orange/red at boot, no HTTP activity**: board is waiting for DHCP with no network cable connected. Connect the Ethernet cable before powering on.
+- **`ERR:HTTP:SND:KO`**: server unreachable. Check `SERVER`/`SERVERPORT` in `fluolight.ino`, verify the server is running, and check the firewall on the server machine (port 8080).
+- **LED displays pulsing red**: hardware or network error (board-level `eventId=1`).
+- **Upload fails with "port not found"**: the 32U4 bootloader may have timed out. Double-press the reset button to force bootloader mode, then retry `make flash`.
+- **`brltty` installed on Ubuntu 24.04**: this can interfere with CH340-based boards but does not affect the FLUOboard (ATmega32U4, `cdc_acm` driver).
 
 ## Dependencies
 
-The following libraries are required:
-- SPI
-- Ethernet
-- I2C_eeprom
-- Adafruit_NeoPixel
+- SPI (bundled with Arduino AVR core)
+- Ethernet (bundled with Arduino AVR core)
+- I2C_EEPROM
+- Adafruit NeoPixel
 - TimedAction
-- avr/wdt (if using watchdog)
+- avr/wdt (bundled, used when `WATCHDOG=1` or `RESET_ON_FAIL > 0`)
 
 ## Board Compatibility
 
-This sketch is specifically designed for the FLUOboard. To add board support, use:
+This sketch targets the FLUOboard (Fluo Technology, ATmega32U4 with built-in Ethernet).
 
+Board Manager URL:
 ```
-Board Manager URL: https://raw.githubusercontent.com/VashTheProgrammer/FLUOboard/master/package_fluo_index.json
+https://raw.githubusercontent.com/VashTheProgrammer/FLUOboard/master/package_fluo_index.json
 ```
 
 ## Memory Usage
 
-This sketch uses approximately:
-- 20,204/28,672 bytes (70%) of program storage space
-- 669/2,560 bytes (26%) of dynamic memory
+With the default configuration (`VERBOSE=2`, `DHCP=0`, `EXT_LINK_CHECK=2`, `RESET_ON_FAIL=0`, `WATCHDOG=0`):
+
+- Program storage: ~25,880 / 28,672 bytes (90%)
+- Dynamic memory: ~912 / 2,560 bytes (35%)
+
+Flash usage is sensitive to verbosity and network options (see flash impact notes in each section above). With `VERBOSE=1` approximately 9% of flash is recovered.
+
+### Build size matrix
+
+The five main options (`VERBOSE`, `DHCP`, `EXT_LINK_CHECK`, `RESET_ON_FAIL`, `WATCHDOG`) are guarded by `#ifndef` in `fluolight.ino` and can be overridden at compile time:
+
+```bash
+arduino-cli compile --fqbn fluo:avr:fluoeth \
+  --build-property compiler.cpp.extra_flags="-DVERBOSE=1 -DDHCP=0 -DRESET_ON_FAIL=2 -DWATCHDOG=1" .
+```
+
+See [`BUILD_SIZES.md`](BUILD_SIZES.md) for the exhaustive build size matrix (192 combinations) and named profiles (prod minimal, prod robuste, dev).
