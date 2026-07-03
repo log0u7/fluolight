@@ -11,9 +11,17 @@ static const char baseUrl[]  = SERVER;
 static const int serverPORT = SERVERPORT;
 static const char serverIP[] = SERVER;
 #endif
- 
+
+// Parser state: persistent across calls to handle TCP fragmentation
+static bool    httpCapturing = false;   // '<' seen, waiting for '>'
+static char    httpToken[10];           // content captured between '<' and '>'
+static uint8_t httpTokenPos  = 0;
+
 void httpReq() {
   client.stop();
+  // reset parser state at the start of each request cycle
+  httpCapturing = false;
+  httpTokenPos  = 0;
   #if VERBOSE > 2
   serialMessage('d',F("HTTP:SND"),serverIP);
   #endif 
@@ -48,30 +56,39 @@ void httpReq() {
 }
 
 void httpRead() {
-  int len = client.available();
-  if (len > 0) {
-    #if RESET_ON_FAIL > 0
-    ErrorCount = 0;
-    #endif
-    #if VERBOSE > 2
-    serialMessage('d',F("HTTP:RCV:OK"),ip2Str(client.remoteIP()));
-    #endif
-    char buffer[160];
-    if (len > 160) len = 160;
-    client.read(buffer, len);
-    #if VERBOSE > 2
-    serialMessage('d',F("HTTP:RCV"),F("BFR:"));
-    Serial.write(buffer, len);
-    Serial.println();
-    #endif
-    for (int i = 1; i < len; i++){
-      if (buffer[i] == '>'){
-        if ( isDigit(buffer[i-1]) && buffer[i-1] != 0 ){
-          eventId = buffer[i-1];
+  if (client.available() <= 0) return;
+
+  #if RESET_ON_FAIL > 0
+  ErrorCount = 0;
+  #endif
+  #if VERBOSE > 2
+  serialMessage('d',F("HTTP:RCV:OK"),ip2Str(client.remoteIP()));
+  #endif
+
+  while (client.available() > 0) {
+    char c = (char)client.read();
+
+    if (c == '<') {
+      httpCapturing = true;
+      httpTokenPos  = 0;
+    } else if (httpCapturing) {
+      if (c == '>') {
+        httpToken[httpTokenPos] = '\0';
+        // V1 strict: token must be exactly one digit
+        if (httpTokenPos == 1 && isDigit(httpToken[0])) {
+          eventId = httpToken[0];
+          #if VERBOSE > 2
+          serialMessage('d',F("HTTP:RCV"),httpToken);
+          #endif
         }
+        httpCapturing = false;
+      } else if (httpTokenPos < sizeof(httpToken) - 1) {
+        httpToken[httpTokenPos++] = c;
+      } else {
+        // token overflow: abandon current capture
+        httpCapturing = false;
       }
     }
-    
   }
 }
 
