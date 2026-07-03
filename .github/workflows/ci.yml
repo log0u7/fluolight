@@ -121,4 +121,6 @@ jobs:
           python-version: "3.x"
 
       - name: Syntax check
-        run: python -m py_compile test_server.py
+        run: |
+          python -m py_compile test_server.py
+          python -m py_compile pipeline_server.py
