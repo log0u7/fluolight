@@ -21,15 +21,18 @@
  * 2 Errors, Warn, Info w sync          (Production Environments Debuging)    ! Memory Storage Space ~+9%
  * 3 Errors, Warn, Info & Debug w/ sync (Devel Environments w/ Serial Only )  ! Memory Storage Space ~+11% 
  */
+#ifndef VERBOSE
 #define VERBOSE 2
+#endif
 
 /* 
  * str HTTP App Server
- * FQDN |IP ADDRESS 
+ * FQDN or IP address of the target server.
+ * For local testing use the IP of the machine running test_server.py.
  */
-#define SERVER "142.56.233.35.bc.googleusercontent.com" //"35.233.56.142" 
-// int SERVER_PORT
-#define SERVERPORT 80
+#define SERVER "192.168.1.65"
+// int HTTP port of the target server (test_server.py default: 8080)
+#define SERVERPORT 8080
 
 /* 
  * bool MAC ADDR SETTING 
@@ -49,7 +52,9 @@
  * 0 -> AUTO (DHCP ON)    ! Memory Storage Space ~+13%
  * 1 -> MANUAL (DHCP OFF) 
  */
+#ifndef DHCP
 #define DHCP 0
+#endif
 
 /* 
  * IP BOARD SETUP
@@ -69,7 +74,9 @@
  * 1 -> MANUAL                                              ! Memory Storage Space ~+1%
  * 2 -> DISABLED
  */  
+#ifndef EXT_LINK_CHECK
 #define EXT_LINK_CHECK 2
+#endif
 
 /* 
  * array TCP Check Server
@@ -99,7 +106,9 @@
  * 0 -> WDT DISABLE (YOU MAY WANT TO ENABLE RESET ON FAIL)
  * 1 -> WDT ENABLE 
  */
+#ifndef WATCHDOG
 #define WATCHDOG 0
+#endif
 #define WATCHDOG_TIMER WDTO_8S
 
 /*
@@ -109,7 +118,9 @@
  * 2 -> RESET BOARD ON "LINK, DHCP, EXTERNAL LINK" WHEN MAX_RETRY IS REACHED    ! Memory Storage Space ~+2%
  * 3 -> RESET BOARD ON ALL ERROR FOUND WHEN MAX_RETRY IS REACHED (NEEDED?)      ! Memory Storage Space ~+2%
  */
-#define RESET_ON_FAIL   0
+#ifndef RESET_ON_FAIL
+#define RESET_ON_FAIL 0
+#endif
 #define REBOOT_TIMEOUT  4000
 #define MAX_RETRY       10  // before restart
 
@@ -146,7 +157,7 @@
 #include <Ethernet.h>           // https://www.arduino.cc/en/Reference/EEPROM 
 #include <I2C_eeprom.h>         // https://www.arduino.cc/reference/en/libraries/i2c_eeprom/ 
 #include <Adafruit_NeoPixel.h>  // https://www.arduino.cc/reference/en/libraries/adafruit-neopixel/
-#if WATCHDOG == 1
+#if WATCHDOG == 1 || RESET_ON_FAIL > 0
 #include <avr/wdt.h>            // https://www.arduino.cc/reference/en/libraries/watchdog/
 #endif
 #include <TimedAction.h>        // https://playground.arduino.cc/Code/TimedAction/

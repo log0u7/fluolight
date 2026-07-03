@@ -75,7 +75,7 @@ void netLinkStatus() {
     #else
     #if VERBOSE > 0
     serialMessage('E',F("ETH:LNK"), F("KO"));
-    #endif VERBOSE >= 2
+    #endif // VERBOSE >= 2
     #endif
   } else {
     isEthLinkActive = 1;

@@ -25,7 +25,7 @@ void eventDisplay(int event){
  */
 
 void eventDispatch(){
-  String eventTag = F("LED:DISP");
+  const __FlashStringHelper* eventTag = F("LED:DISP");
   uint16_t i;
   switch(eventId) {
     #if VERBOSE >= 4
@@ -170,5 +170,5 @@ void eventDispatch(){
       colorWipe(strip.Color(0,0,0),strip.numPixels(),WIPE_SPEED);
     break;
   }
-  eventId = NULL;
+  eventId = 0;
 }

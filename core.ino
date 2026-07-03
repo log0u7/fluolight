@@ -7,73 +7,61 @@
 /* 
  * void serialMessage() write standardized messages to serial monitor 
  * char type        : (e)rror, (w)arning, (i)nformation, (d)ebug
- * String tag       : Stage Marker, Messafe identifier
- * String message   : Message to send
+ * const __FlashStringHelper* tag     : stage marker (use F("..."))
+ * const __FlashStringHelper* message : message (use F("...") or const char*)
  *  
  * // write : "INFO::CORE::SAMPLE: Hello World !" to serial
  * serialMessage('i', 'CORE::SAMPLE', "Hello World !") 
  *  
  */
 #if VERBOSE >= 1
-void serialMessage(char type, const String tag , const String message){
-  switch(type){ 
-    case 'e':
-      Serial.print(F("ERR:")); 
-      Serial.print(tag); 
-      Serial.print(F(": "));
-      Serial.println(message);
-    break;     
+static void _serialMessageHeader(char type, const __FlashStringHelper* tag) {
+  switch(type) {
+    case 'e': Serial.print(F("ERR:")); break;
     #if VERBOSE >= 2
-    case 'w':
-      Serial.print(F("WRN:"));
-      Serial.print(tag);
-      Serial.print(F(": "));
-      Serial.println(message);
-    break;     
-    case 'i':
-      Serial.print(F("INF:"));
-      Serial.print(tag);
-      Serial.print(F(": "));
-      Serial.println(message);
-    break;     
+    case 'w': Serial.print(F("WRN:")); break;
+    case 'i': Serial.print(F("INF:")); break;
     #endif
     #if VERBOSE >= 3
-    case 'd':  
-      Serial.print(F("DBG:"));
-      Serial.print(tag);
-      Serial.print(F(": "));
-      Serial.println(message);
-    break;     
+    case 'd': Serial.print(F("DBG:")); break;
     #endif
   }
+  Serial.print(tag);
+  Serial.print(F(": "));
+}
+void serialMessage(char type, const __FlashStringHelper* tag, const __FlashStringHelper* message) {
+  _serialMessageHeader(type, tag);
+  Serial.println(message);
+}
+void serialMessage(char type, const __FlashStringHelper* tag, const char* message) {
+  _serialMessageHeader(type, tag);
+  Serial.println(message);
 }
 #endif 
 /*
- * String mac2Str()
+ * const char* mac2Str()
  * 
- * Convert Mac Array to String
+ * Convert Mac Array to string (static buffer, valid until next call)
  * 
  */
-String mac2Str(uint8_t* in) {
-  static char macStr[18];
+const char* mac2Str(uint8_t* in) {
+  static char macStr[13];
   snprintf(macStr, sizeof(macStr),
           "%02x%02x%02x%02x%02x%02x",
           in[0], in[1], in[2], in[3], in[4], in[5]);
-  String tmp = macStr;
-  return tmp;    
+  return macStr;
 }
 /*
- * String ip2Str()
+ * const char* ip2Str()
  * 
- * Convert IP Array to String
+ * Convert IP Array to string (static buffer, valid until next call)
  */
-String ip2Str(IPAddress ip) {
+const char* ip2Str(IPAddress ip) {
   static char ipStr[16];
   snprintf(ipStr, sizeof(ipStr),
               "%d.%d.%d.%d",
-              ip[0], ip[1], ip[2], ip[3]);  
-  String tmp = ipStr;
-  return tmp;
+              ip[0], ip[1], ip[2], ip[3]);
+  return ipStr;
 }
 
  /*
@@ -81,20 +69,23 @@ String ip2Str(IPAddress ip) {
   * Trigger reset function when MAX_RETRY errors is reached
   */
 #if RESET_ON_FAIL > 0 
-static int ErrorCount; 
-void Error(const String errorDescription)
+static int ErrorCount;
+void Error(const __FlashStringHelper* errorDescription)
 {
   #if VERBOSE >= 1
-  serialMessage('e',F("FLUO:ERR:TRGR"), errorDescription);
+  serialMessage('e', F("FLUO:ERR:TRGR"), errorDescription);
   #endif
   ErrorCount++;
   #if VERBOSE >= 1
-  serialMessage('e',F("FLUO:ERR:TRGR:COUNT"), String(ErrorCount));
+  char countStr[6];
+  itoa(ErrorCount, countStr, 10);
+  serialMessage('e', F("FLUO:ERR:TRGR:COUNT"), countStr);
   #endif
   eventId = 1;
-  if (ErrorCount >= MAX_RETRY)
+  if (ErrorCount >= MAX_RETRY) {
     ErrorCount = 0;
     reset('s', errorDescription);
+  }
 }
 
 /*
@@ -103,7 +94,7 @@ void Error(const String errorDescription)
  * s : short reset as soon as possible
  * l : long reset when REBOOT_TIMEOUT is reached
  */
-void reset(char type, String errorString) {
+void reset(char type, const __FlashStringHelper* errorString) {
   static int timeout = REBOOT_TIMEOUT; 
   static int partial = 1000;
   if (type == 's') {
@@ -111,7 +102,8 @@ void reset(char type, String errorString) {
         serialMessage('e',F("FLUO:SOFTRST"), errorString);
         #endif
         eventId = 2;
-        void (*softReset) (void) = 0;
+        wdt_enable(WDTO_15MS);
+        while (1) {}
   }
   if (type == 'l') {
     #if VERBOSE >= 1
