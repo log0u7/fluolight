@@ -23,9 +23,7 @@ jobs:
             - name: fluo:avr
               source-url: https://raw.githubusercontent.com/VashTheProgrammer/FLUOboard/master/package_fluo_index.json
           libraries: |
-            - name: Adafruit NeoPixel
-            - name: TimedAction
-            - name: I2C_EEPROM
+            - source-path: ./libraries/TimedAction
           sketch-paths: ./
           enable-deltas-report: true
 
@@ -72,30 +70,20 @@ jobs:
           arduino-cli core update-index
           arduino-cli core install fluo:avr
 
-      - name: Install libraries
-        run: |
-          arduino-cli lib install "Adafruit NeoPixel"
-          arduino-cli lib install "TimedAction"
-          arduino-cli lib install "I2C_EEPROM"
-
       - name: Compile (${{ matrix.profile }})
         id: compile
         run: |
           FLASH_MAX=28672
           FLAGS="${{ matrix.flags }}"
+          EXTRA_PROPS=()
+          [ -n "$FLAGS" ] && EXTRA_PROPS=(--build-property "compiler.cpp.extra_flags=$FLAGS")
 
-          if [ -n "$FLAGS" ]; then
-            arduino-cli compile \
-              --fqbn fluo:avr:fluoeth \
-              --build-property "compiler.cpp.extra_flags=$FLAGS" \
-              --format json \
-              . > /tmp/build.json 2>&1
-          else
-            arduino-cli compile \
-              --fqbn fluo:avr:fluoeth \
-              --format json \
-              . > /tmp/build.json 2>&1
-          fi
+          arduino-cli compile \
+            --fqbn fluo:avr:fluoeth \
+            --libraries ./libraries \
+            "${EXTRA_PROPS[@]}" \
+            --format json \
+            . > /tmp/build.json 2>&1
 
           FLASH=$(python3 -c "
           import json, sys
