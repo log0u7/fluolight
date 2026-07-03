@@ -255,6 +255,7 @@ void loop() {
     httpProcess.check(); 
   }
   dispatchEvents.check();
+  animTick();
   
   #if MAIN_LOOP_INTERVAL > 0
   delay(MAIN_LOOP_INTERVAL);  // Main Clock Delay         
