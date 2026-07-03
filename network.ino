@@ -4,7 +4,7 @@
  *
  **/
  
-#if DHCP == 1                                       
+#if DHCP == 0
 static const IPAddress ip(IP_ADDRESS);
 static const IPAddress subnet(IP_SUBNET);
 static const IPAddress gateway(IP_GATEWAY);      
@@ -36,7 +36,7 @@ void netInitSetup(){
   #endif
   if (Ethernet.hardwareStatus() == 0) {
   eventId = 4; eventDispatch();
-    #if DHCP == 0
+    #if DHCP == 1
     #if VERBOSE > 1
     serialMessage('i',F("ETH:INIT"), F("DHCP"));
     #endif
@@ -123,7 +123,7 @@ void netExtLinkStatus() {
 /*
  *  Renew DHCP leases
  */
-#if DHCP == 0
+#if DHCP == 1
 void netDhcpRenew() {
   #if VERBOSE >= 2
   serialMessage('i',F("ETH:DHCP"), F("RENEW"));

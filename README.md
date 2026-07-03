@@ -122,8 +122,8 @@ The board makes `GET /lights/<mac>` requests to this server every `HTTP_REQ_INTE
 ```
 
 - `DHCP`
-  - `0` - Auto (use DHCP) - flash impact: ~+13%
-  - `1` - Manual (use static IP configuration below)
+  - `0` - Manual (use static IP configuration below)
+  - `1` - Auto (use DHCP) - flash impact: ~+13%
 
 Note: with `DHCP=0`, `Ethernet.begin()` blocks for up to ~60s at boot if no network cable is connected.
 
