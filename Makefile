@@ -1,5 +1,7 @@
 FQBN    ?= fluo:avr:fluoeth
-PORT    ?= /dev/ttyACM0
+# Auto-detect the FLUOboard serial port (FQBN match, then VID 0x2ecf fallback).
+# Override with: make <target> PORT=/dev/ttyACMx
+PORT    ?= $(shell arduino-cli board list --format json 2>/dev/null | python3 detect_port.py $(FQBN))
 BAUD    ?= 115200
 SKETCH  ?= .
 # Build options (overridable, match #ifndef guards in fluolight.ino)
@@ -52,7 +54,7 @@ help:
 	@echo ""
 	@echo "Variables (overridable):"
 	@echo "  FQBN=$(FQBN)"
-	@echo "  PORT=$(PORT)"
+	@echo "  PORT=$(PORT)  (auto-detected; override with PORT=/dev/ttyACMx)"
 	@echo "  BAUD=$(BAUD)"
 	@echo ""
 	@echo "Build options (#ifndef guards - leave empty for defaults):"
@@ -73,11 +75,13 @@ compile:
 	arduino-cli compile --fqbn $(FQBN) $(_BUILD_PROP) $(SKETCH)
 
 upload:
+	@test -n "$(PORT)" || { echo "No FLUOboard detected. Connect the board or pass PORT=/dev/ttyACMx"; exit 1; }
 	arduino-cli upload -p $(PORT) --fqbn $(FQBN) $(SKETCH)
 
 flash: compile upload
 
 monitor:
+	@test -n "$(PORT)" || { echo "No FLUOboard detected. Connect the board or pass PORT=/dev/ttyACMx"; exit 1; }
 	arduino-cli monitor -p $(PORT) -c baudrate=$(BAUD)
 
 board:
