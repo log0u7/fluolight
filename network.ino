@@ -34,15 +34,18 @@ void netInitSetup(){
   #if VERBOSE > 1
   serialMessage('i',F("ETH:INIT"), mac2Str(mac));
   #endif
+  // Note: on the fluo:avr core, hardwareStatus() returns 0 even when
+  // the Ethernet chip is present and functional. The condition == 0
+  // is intentional for this core (verified on hardware).
   if (Ethernet.hardwareStatus() == 0) {
   eventId = 4; eventDispatch();
     #if DHCP == 1
     #if VERBOSE > 1
     serialMessage('i',F("ETH:INIT"), F("DHCP"));
     #endif
-    if (Ethernet.begin(mac) != 0) {
+    if (Ethernet.begin(mac) == 0) {
       #if VERBOSE > 0
-      serialMessage('E',F("ETH:INIT:DHCP"), F("KO"));
+      serialMessage('e',F("ETH:INIT:DHCP"), F("KO"));
       #endif
       #if RESET_ON_FAIL == 2
       reset('l', F("ETH:INIT:DHCP: KO"));
@@ -74,7 +77,7 @@ void netLinkStatus() {
     Error(F("ETH:LNK:KO"));
     #else
     #if VERBOSE > 0
-    serialMessage('E',F("ETH:LNK"), F("KO"));
+    serialMessage('e',F("ETH:LNK"), F("KO"));
     #endif // VERBOSE >= 2
     #endif
   } else {
@@ -112,7 +115,7 @@ void netExtLinkStatus() {
     Error(F("ETH:EXT_LNK: KO"));
     #endif
     #if VERBOSE >= 1
-    serialMessage('E',F("ETH:EXT_LNK"), F("KO"));
+    serialMessage('e',F("ETH:EXT_LNK"), F("KO"));
     #endif 
     ExternalLinkIsActive = 0;
     eventId = 7;
@@ -135,7 +138,7 @@ void netDhcpRenew() {
       Error(F("ETH:DHCP:RENW: KO"));
       #else
       #if VERBOSE >= 1
-      serialMessage('E',F("ETH:DHCP:RENW"), F("KO"));
+      serialMessage('e',F("ETH:DHCP:RENW"), F("KO"));
       #endif
       eventDisplay(8); 
       #endif 
@@ -151,7 +154,7 @@ void netDhcpRenew() {
       Error(F("DHCP:REBND: KO"));
       #else
       #if VERBOSE >= 1
-      serialMessage('E',F("ETH:DHCP:REBND"), F("KO"));
+      serialMessage('e',F("ETH:DHCP:REBND"), F("KO"));
       #endif
       eventDisplay(8); 
       #endif 
