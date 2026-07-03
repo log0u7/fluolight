@@ -8,24 +8,45 @@ void eventDisplay(int event){
     eventId = event;
 }
 
- /*
+/*
  * void eventDispatch()
- * switch static int eventIndex :
- * 0-2 System Status Events
- * 0    -> Idle / No Event
- * 1    -> Board Error 
- * 2    -> Board Soft Reset
- * 3    -> 
- * 4-9 Ethernet Status Events
- * 4/5  -> Ethernet Connecting 
- * 6/7  -> External TCP checks 
- * 8/9  -> DHCP Renew Status
- * 48-57 App Events : ASCII char '0'-'9' (server response codes)
+ *
+ * System events (set directly via eventId or eventDisplay()):
+ *
+ *   id  Semantic              Effect                  Emitter
+ *   --  --------------------  ----------------------  -----------------------
+ *   0   Idle / no event       (none)                  end of each dispatch
+ *   1   Board error           fade red (non-blocking)  Error() - core.ino
+ *   2   Ethernet init OK      wipe green              netInitSetup() - network.ino
+ *   3   Ext TCP check OK      blink white             netExtLinkStatus() OK
+ *   4   Ext TCP check KO      blink orange            netExtLinkStatus() KO
+ *   5   DHCP renew/rebind OK  fade green              netDhcpRenew() cases 2,4
+ *   6   DHCP renew/rebind KO  fade red                netDhcpRenew() cases 1,3
+ *
+ * Board reset: handled directly in reset() - core.ino (brief blue fill,
+ * no eventId; the board reboots 15ms later via watchdog).
+ *
+ * App events (set by httpRead() from the server ASCII response '0'-'9'):
+ *
+ *   id   char  Semantic                    Effect
+ *   ---  ----  --------------------------  ------------------------------
+ *   48   '0'   server error                continuous fade red
+ *   49   '1'   available + vacant          wipe green
+ *   50   '2'   available + occupied        wipe orange
+ *   51   '3'   booked + vacant             wipe pink
+ *   52   '4'   booked + occupied           wipe red
+ *   53   '5'   soon in use + vacant        wipe orange
+ *   54   '6'   soon in use + occupied      continuous toggle green/orange
+ *   55   '7'   (user-defined)              wipe blue
+ *   56   '8'   (user-defined)              wipe white
+ *   57   '9'   off                         wipe black
+ *
+ * App events replay only when the server code changes (lastAppEvent guard).
+ * All animations use the non-blocking state machine in neopixel.ino (animTick).
  */
 
 void eventDispatch(){
   const __FlashStringHelper* eventTag = F("LED:DISP");
-  uint16_t i;
   switch(eventId) {
     #if VERBOSE >= 4
     case 0:
@@ -36,50 +57,37 @@ void eventDispatch(){
       #if VERBOSE >= 2
       serialMessage('i',eventTag, F("Board Err"));
       #endif
-      colorFade('r',1,FADE_SPEED);
+      animStartFade('r', 1, FADE_SPEED, false);
     break;
     case 2:
       #if VERBOSE >= 2
-      serialMessage('i',eventTag, F("Board Rst"));
+      serialMessage('i',eventTag, F("Eth Init OK"));
       #endif
-      colorFade('b',1,FADE_SPEED);
+      animStartWipe(strip.Color(40,226,0), 1, 100);
     break;
-    case 4:
-      #if VERBOSE >= 2
-      serialMessage('i',eventTag, F("Eth Up"));
-      #endif
-      colorWipe(strip.Color(40,226,0),1,100);
-      colorBlink(strip.Color(20,113,0),1,500);
-    break;
-    case 5:
-      #if VERBOSE >= 2
-      serialMessage('i',eventTag, F("Eth Manual"));
-      #endif
-      colorFade('b',1,FADE_SPEED);
-    break;
-    case 6:
+    case 3:
       #if VERBOSE >= 2
       serialMessage('i',eventTag, F("TCP Check OK"));
       #endif
-      colorBlink(strip.Color(1,1,1),1,50);
+      animStartToggle(strip.getPixelColor(0), strip.Color(1,1,1), 50, false);
     break;
-    case 7:
+    case 4:
       #if VERBOSE >= 2
       serialMessage('i',eventTag, F("TCP Check KO"));
       #endif
-      colorBlink(strip.Color(20,113,0),1,100);   
+      animStartToggle(strip.getPixelColor(0), strip.Color(20,113,0), 100, false);
     break;
-    case 8:
+    case 5:
       #if VERBOSE >= 2
-      serialMessage('i',eventTag, F("DHCP STATUS OK"));
+      serialMessage('i',eventTag, F("DHCP OK"));
       #endif
-      colorFade('g',1,FADE_SPEED);
+      animStartFade('g', 1, FADE_SPEED, false);
     break;
-    case 9:
+    case 6:
       #if VERBOSE >= 2
-      serialMessage('i',eventTag, F("DHCP STATUS K0"));
+      serialMessage('i',eventTag, F("DHCP KO"));
       #endif
-      colorFade('r',1,FADE_SPEED);
+      animStartFade('r', 1, FADE_SPEED, false);
     break;
     /*
      * Events for ASCII server responses 
