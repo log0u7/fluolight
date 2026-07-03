@@ -20,8 +20,7 @@ void eventDisplay(int event){
  * 4/5  -> Ethernet Connecting 
  * 6/7  -> External TCP checks 
  * 8/9  -> DHCP Renew Status
- * 48-57 App Events : char(0-9) 
- * 48-57 App Events : char(a-f)
+ * 48-57 App Events : ASCII char '0'-'9' (server response codes)
  */
 
 void eventDispatch(){
@@ -91,8 +90,12 @@ void eventDispatch(){
       serialMessage('i',eventTag, F("0 = server error = blinkfade red"));
       #endif
       //blinking fade red 
-      for (i = 0; i < (HTTP_REQ_INTERVAL / 1000); i++)
+      for (i = 0; i < (HTTP_REQ_INTERVAL / 1000); i++) {
         colorFade('r',1,FADE_SPEED);
+        #if WATCHDOG == 1
+        wdt_reset();
+        #endif
+      }
     break;
     case 49:
       #if VERBOSE >= 2
@@ -143,6 +146,9 @@ void eventDispatch(){
         strip.fill(strip.Color(40,226,0));
         strip.show();
         colorBlink(strip.Color(20,113,0),strip.numPixels(),500);
+        #if WATCHDOG == 1
+        wdt_reset();
+        #endif
       }
     break;
     case 55:

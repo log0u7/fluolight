@@ -13,6 +13,9 @@ void colorWipe(uint32_t color, int pixel, int wait) {
     strip.setPixelColor(i, color);            // Set pixel's color (in RAM)
     strip.show();                             // Update strip to match
     delay(wait);                              // Pause for a moment
+    #if WATCHDOG == 1
+    wdt_reset();
+    #endif
   }
 }
 
@@ -52,6 +55,9 @@ void colorFade(char color, int pixel, int wait) {
     }
     strip.show();
     delay(wait);
+    #if WATCHDOG == 1
+    wdt_reset();
+    #endif
   }
   for (j = 255; j > 0; j--) { //fadeout
     for (i = 0; i < strip.numPixels(); i++) {
@@ -63,6 +69,9 @@ void colorFade(char color, int pixel, int wait) {
     }
     strip.show();
     delay(wait);
+    #if WATCHDOG == 1
+    wdt_reset();
+    #endif
   }
   strip.fill(lastColor);
   strip.show(); 
