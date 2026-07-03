@@ -83,97 +83,88 @@ void eventDispatch(){
     break;
     /*
      * Events for ASCII server responses 
-     * 
+     * Replay only when app code changes (lastAppEvent guard).
      */
+    static int lastAppEvent = -1;
     case 48:
+      if (lastAppEvent == eventId) break;
+      lastAppEvent = eventId;
       #if VERBOSE >= 2
       serialMessage('i',eventTag, F("0 = server error = blinkfade red"));
       #endif
-      //blinking fade red 
-      for (i = 0; i < (HTTP_REQ_INTERVAL / 1000); i++) {
-        colorFade('r',1,FADE_SPEED);
-        #if WATCHDOG == 1
-        wdt_reset();
-        #endif
-      }
+      animStartFade('r', 1, FADE_SPEED, true);
     break;
     case 49:
+      if (lastAppEvent == eventId) break;
+      lastAppEvent = eventId;
       #if VERBOSE >= 2
       serialMessage('i',eventTag, F("1 = avail+vacant = green"));
       #endif
-      //strip.fill(strip.Color(255,0,0));
-      //strip.show();
-      colorWipe(strip.Color(255,0,0),strip.numPixels(),WIPE_SPEED);
+      animStartWipe(strip.Color(255,0,0), strip.numPixels(), WIPE_SPEED);
     break;
     case 50:
+      if (lastAppEvent == eventId) break;
+      lastAppEvent = eventId;
       #if VERBOSE >= 2
       serialMessage('i',eventTag, F("2 = available+occupied = orange"));
       #endif
-      //strip.fill(strip.Color(29,113,0));
-      //strip.show();
-      colorWipe(strip.Color(20,113,0),strip.numPixels(),WIPE_SPEED);
+      animStartWipe(strip.Color(20,113,0), strip.numPixels(), WIPE_SPEED);
     break;
     case 51:
+      if (lastAppEvent == eventId) break;
+      lastAppEvent = eventId;
       #if VERBOSE >= 2
       serialMessage('i',eventTag, F("3 = booked+vacant = pink"));
       #endif
-      //strip.fill(strip.Color(0,81,81));
-      //strip.show();
-      colorWipe(strip.Color(0,81,81),strip.numPixels(),WIPE_SPEED);
+      animStartWipe(strip.Color(0,81,81), strip.numPixels(), WIPE_SPEED);
     break;
     case 52:
+      if (lastAppEvent == eventId) break;
+      lastAppEvent = eventId;
       #if VERBOSE >= 2
       serialMessage('i',eventTag, F("4 = booked+occupied = red"));
       #endif
-      //strip.fill(strip.Color(0,162,0));
-      //strip.show();
-      colorWipe(strip.Color(0,162,0),strip.numPixels(),WIPE_SPEED);
+      animStartWipe(strip.Color(0,162,0), strip.numPixels(), WIPE_SPEED);
     break;
     case 53:
+      if (lastAppEvent == eventId) break;
+      lastAppEvent = eventId;
       #if VERBOSE >= 2
       serialMessage('i',eventTag, F("5 = soon in use + vacant = orange"));
       #endif
-      //strip.fill(strip.Color(20,113,0));
-      //strip.show();
-      colorWipe(strip.Color(20,113,0),strip.numPixels(),WIPE_SPEED); //Orange Fix
+      animStartWipe(strip.Color(20,113,0), strip.numPixels(), WIPE_SPEED);
     break;
     case 54:
+      if (lastAppEvent == eventId) break;
+      lastAppEvent = eventId;
       #if VERBOSE >= 2
       serialMessage('i',eventTag, F("6 = soon_in_use+occupied = blinking orange"));
       #endif
-      // blinking wipe
-      for (i = 0; i < (HTTP_REQ_INTERVAL/1000); i++) {
-        strip.fill(strip.Color(40,226,0));
-        strip.show();
-        colorBlink(strip.Color(20,113,0),strip.numPixels(),500);
-        #if WATCHDOG == 1
-        wdt_reset();
-        #endif
-      }
+      animStartToggle(strip.Color(40,226,0), strip.Color(20,113,0), 500, true);
     break;
     case 55:
+      if (lastAppEvent == eventId) break;
+      lastAppEvent = eventId;
       #if VERBOSE >= 2
       serialMessage('i',eventTag, F("7 = blue"));
       #endif
-      //strip.fill(strip.Color(0,0,255));
-      //strip.show();
-      colorWipe(strip.Color(0,0,255),strip.numPixels(),WIPE_SPEED);
+      animStartWipe(strip.Color(0,0,255), strip.numPixels(), WIPE_SPEED);
     break;
     case 56:
+      if (lastAppEvent == eventId) break;
+      lastAppEvent = eventId;
       #if VERBOSE >= 2
       serialMessage('i',eventTag, F("8 = white"));
       #endif
-      //strip.fill(strip.Color(255,255,255));
-      //strip.show();
-      colorWipe(strip.Color(255,255,255),strip.numPixels(),WIPE_SPEED);
+      animStartWipe(strip.Color(255,255,255), strip.numPixels(), WIPE_SPEED);
     break;
     case 57:
+      if (lastAppEvent == eventId) break;
+      lastAppEvent = eventId;
       #if VERBOSE >= 2
       serialMessage('i',eventTag, F("9 = off"));
       #endif
-      //strip.clear();
-      //strip.show();
-      colorWipe(strip.Color(0,0,0),strip.numPixels(),WIPE_SPEED);
+      animStartWipe(strip.Color(0,0,0), strip.numPixels(), WIPE_SPEED);
     break;
   }
   eventId = 0;

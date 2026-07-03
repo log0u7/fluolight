@@ -142,6 +142,9 @@
 #define EXT_LINK_CHECK_INTERVAL   25000     // 25 secondes between each external tcp checks
 #define MAIN_LOOP_INTERVAL        0         // Mais loop delay : 0 - 100ms
 
+// HTTP consecutive failure threshold before logging KO
+#define HTTP_FAIL_THRESHOLD       3
+
 // MAC ADDR INTERNAL
 #define ADDR_MAC  0xFA
 #define DEVICEADDRESS (0x50)
