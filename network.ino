@@ -38,7 +38,7 @@ void netInitSetup(){
   // the Ethernet chip is present and functional. The condition == 0
   // is intentional for this core (verified on hardware).
   if (Ethernet.hardwareStatus() == 0) {
-  eventId = 4; eventDispatch();
+  eventId = 2; eventDispatch();
     #if DHCP == 1
     #if VERBOSE > 1
     serialMessage('i',F("ETH:INIT"), F("DHCP"));
@@ -102,7 +102,7 @@ void netExtLinkStatus() {
     #if VERBOSE >= 2
     serialMessage('i',F("ETH:EXT_LNK"), F("OK"));
     #endif
-    eventId = 6;
+    eventId = 3;
     ExternalLinkIsActive = 1;
     #if RESET_ON_FAIL > 0
     ErrorCount = 0;
@@ -118,7 +118,7 @@ void netExtLinkStatus() {
     serialMessage('e',F("ETH:EXT_LNK"), F("KO"));
     #endif 
     ExternalLinkIsActive = 0;
-    eventId = 7;
+    eventId = 4;
   }
   client.stop();  // release socket immediately after test
 }
@@ -140,14 +140,14 @@ void netDhcpRenew() {
       #if VERBOSE >= 1
       serialMessage('e',F("ETH:DHCP:RENW"), F("KO"));
       #endif
-      eventDisplay(8); 
-      #endif 
+      eventDisplay(6);
+      #endif
     break;
     case 2:
       #if VERBOSE >= 2
       serialMessage('i',F("ETH:DHCP:RENW"), F("OK"));
       #endif
-      eventDisplay(7);     
+      eventDisplay(5);
     break;
     case 3:
       #if RESET_ON_FAIL >= 2
@@ -156,14 +156,14 @@ void netDhcpRenew() {
       #if VERBOSE >= 1
       serialMessage('e',F("ETH:DHCP:REBND"), F("KO"));
       #endif
-      eventDisplay(8); 
-      #endif 
+      eventDisplay(6);
+      #endif
     break;
     case 4:
       #if VERBOSE >= 2
       serialMessage('i',F("ETH:DHCP:REBND"), F("OK"));
       #endif
-      eventDisplay(7);
+      eventDisplay(5);
     break;
   }
 }

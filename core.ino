@@ -101,7 +101,11 @@ void reset(char type, const __FlashStringHelper* errorString) {
         #if VERBOSE >= 1
         serialMessage('e',F("FLUO:SOFTRST"), errorString);
         #endif
-        eventId = 2;
+        // Brief blue flash so the user sees the board is rebooting.
+        // Blocking here is intentional: the reset happens 15ms later anyway.
+        strip.fill(strip.Color(0, 0, 255)); // GRB: G=0, R=0, B=255
+        strip.show();
+        delay(300);
         wdt_enable(WDTO_15MS);
         while (1) {}
   }
