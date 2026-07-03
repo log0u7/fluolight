@@ -1,20 +1,20 @@
 #!/usr/bin/env python3
 """
-Serveur de test fluolight - cycle automatique des codes couleur 0-9
-Ecoute sur 0.0.0.0:8080, repond a GET /lights/<mac> avec <N>
-La carte interroge toutes les 3s (HTTP_REQ_INTERVAL), le code change toutes les 5s.
+FluoLight test server - automatically cycles through status codes 0-9.
+Listens on 0.0.0.0:8080, responds to GET /lights/<mac> with <N>.
+The board polls every 3s (HTTP_REQ_INTERVAL); the code changes every 5s.
 
-Codes couleur :
-  0 - erreur serveur (rouge clignotant)
-  1 - disponible + libre (vert)
-  2 - disponible + occupe (orange)
-  3 - reserve + libre (rose)
-  4 - reserve + occupe (rouge)
-  5 - bientot utilise + libre (orange)
-  6 - bientot utilise + occupe (orange clignotant)
-  7 - bleu
-  8 - blanc
-  9 - eteint
+Status codes:
+  0 - server error           (blinking red)
+  1 - available + vacant     (green)
+  2 - available + occupied   (orange)
+  3 - booked + vacant        (pink)
+  4 - booked + occupied      (red)
+  5 - soon in use + vacant   (orange)
+  6 - soon in use + occupied (blinking orange)
+  7 - blue
+  8 - white
+  9 - off
 """
 import http.server
 import socketserver
@@ -26,16 +26,16 @@ PORT = 8080
 STEP_SECONDS = 5   # duree d'affichage par couleur (en secondes)
 
 LABELS = {
-    "0": "erreur serveur       (rouge clignotant)",
-    "1": "disponible + libre   (vert)",
-    "2": "disponible + occupe  (orange)",
-    "3": "reserve + libre      (rose)",
-    "4": "reserve + occupe     (rouge)",
-    "5": "bientot utilise      (orange)",
-    "6": "bientot + occupe     (orange clignotant)",
-    "7": "bleu",
-    "8": "blanc",
-    "9": "eteint",
+    "0": "server error           (blinking red)",
+    "1": "available + vacant     (green)",
+    "2": "available + occupied   (orange)",
+    "3": "booked + vacant        (pink)",
+    "4": "booked + occupied      (red)",
+    "5": "soon in use + vacant   (orange)",
+    "6": "soon in use + occupied (blinking orange)",
+    "7": "blue",
+    "8": "white",
+    "9": "off",
 }
 
 current = "1"
@@ -70,12 +70,12 @@ server = socketserver.ThreadingTCPServer(("0.0.0.0", PORT), FluoHandler)
 t = threading.Thread(target=cycle_colors, daemon=True)
 t.start()
 
-print(f"Serveur fluolight sur 0.0.0.0:{PORT}")
-print(f"Cycle automatique des codes 0-9 ({STEP_SECONDS}s par couleur)")
-print("Ctrl+C pour arreter\n")
+print(f"FluoLight test server on 0.0.0.0:{PORT}")
+print(f"Cycling codes 0-9 ({STEP_SECONDS}s per code)")
+print("Ctrl+C to stop\n")
 
 try:
     server.serve_forever()
 except KeyboardInterrupt:
-    print("\nArret du serveur.")
+    print("\nStopping server.")
     server.shutdown()
