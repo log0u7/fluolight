@@ -49,11 +49,11 @@
 
 /* 
  * bool NETWORK SETTING 
- * 0 -> AUTO (DHCP ON)    ! Memory Storage Space ~+13%
- * 1 -> MANUAL (DHCP OFF) 
+ * 0 -> MANUAL (DHCP OFF, static IP) 
+ * 1 -> AUTO   (DHCP ON)             ! Memory Storage Space ~+13%
  */
 #ifndef DHCP
-#define DHCP 0
+#define DHCP 1
 #endif
 
 /* 
@@ -224,7 +224,7 @@ TimedAction ethLinkStatus   = TimedAction( LINK_CHECK_INTERVAL,     netLinkStatu
 TimedAction httpRequest     = TimedAction( HTTP_REQ_INTERVAL,       httpReq ); 
 TimedAction httpProcess     = TimedAction( HTTP_READ_INTERVAL,      httpRead );
 TimedAction dispatchEvents  = TimedAction( EVENT_DISP_INTERVAL,     eventDispatch );       
-#if DHCP == 0
+#if DHCP == 1
 TimedAction dhcpRenew       = TimedAction( DHCP_STATUS_INTERVAL,    netDhcpRenew );
 #endif
 #if EXT_LINK_CHECK < 2
@@ -243,7 +243,7 @@ void loop() {
     #if EXT_LINK_CHECK < 2
     extLinkStatus.check();
     #endif
-    #if DHCP == 0
+    #if DHCP == 1
     dhcpRenew.check();
     #endif     
     httpRequest.check(); 
