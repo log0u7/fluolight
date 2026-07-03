@@ -17,6 +17,9 @@ static bool    httpCapturing = false;   // '<' seen, waiting for '>'
 static char    httpToken[10];           // content captured between '<' and '>'
 static uint8_t httpTokenPos  = 0;
 
+// Consecutive connect failure counter; log KO only after threshold
+static uint8_t httpFailCount = 0;
+
 void httpReq() {
   client.stop();
   // reset parser state at the start of each request cycle
@@ -26,6 +29,7 @@ void httpReq() {
   serialMessage('d',F("HTTP:SND"),serverIP);
   #endif 
   if (client.connect(serverIP,serverPORT)) {
+    httpFailCount = 0;
     #if PROXYSET == 1   
     // Craft PROXY HTTP request :
     client.print(F("GET http://"));
@@ -49,8 +53,11 @@ void httpReq() {
     serialMessage('d',F("HTTP:SND:OK"),serverIP);
     #endif
   } else {
-    #if VERBOSE >= 1 
-    serialMessage('e',F("HTTP:SND:KO"),serverIP);
+    httpFailCount++;
+    #if VERBOSE >= 1
+    if (httpFailCount >= HTTP_FAIL_THRESHOLD) {
+      serialMessage('e',F("HTTP:SND:KO"),serverIP);
+    }
     #endif
   }
 }
