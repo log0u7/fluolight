@@ -3,8 +3,7 @@
  *
  * Board Manager : https://raw.githubusercontent.com/VashTheProgrammer/FLUOboard/master/package_fluo_index.json
  *  
- * This Sketch uses 20204/28672 bytes (70%) of program storage space.
- * Global variables use 669/2560 bytes (26%) of dynamic memory, leaving 1891 bytes for local variables.
+ * See BUILD_SIZES.md for flash/RAM usage by build profile.
  * 
  */
 
