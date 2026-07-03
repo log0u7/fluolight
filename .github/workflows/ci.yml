@@ -20,6 +20,7 @@ jobs:
         with:
           fqbn: fluo:avr:fluoeth
           platforms: |
+            - name: arduino:avr
             - name: fluo:avr
               source-url: https://raw.githubusercontent.com/VashTheProgrammer/FLUOboard/master/package_fluo_index.json
           libraries: |
@@ -63,11 +64,12 @@ jobs:
           key: arduino15-fluo-${{ hashFiles('.github/workflows/ci.yml') }}
           restore-keys: arduino15-fluo-
 
-      - name: Install FLUOboard core
+      - name: Install cores
         run: |
           arduino-cli config add board_manager.additional_urls \
             https://raw.githubusercontent.com/VashTheProgrammer/FLUOboard/master/package_fluo_index.json
           arduino-cli core update-index
+          arduino-cli core install arduino:avr
           arduino-cli core install fluo:avr
 
       - name: Compile (${{ matrix.profile }})
@@ -78,12 +80,16 @@ jobs:
           EXTRA_PROPS=()
           [ -n "$FLAGS" ] && EXTRA_PROPS=(--build-property "compiler.cpp.extra_flags=$FLAGS")
 
-          arduino-cli compile \
+          if ! arduino-cli compile \
             --fqbn fluo:avr:fluoeth \
             --libraries ./libraries \
             "${EXTRA_PROPS[@]}" \
             --format json \
-            . > /tmp/build.json 2>&1
+            . > /tmp/build.json 2>&1; then
+            echo "Compilation failed - build output:"
+            cat /tmp/build.json
+            exit 1
+          fi
 
           FLASH=$(python3 -c "
           import json, sys
