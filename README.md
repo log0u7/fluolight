@@ -312,9 +312,9 @@ export GITLAB_TOKEN_gitlab_example_com=glpat-...
 ### Running
 
 ```bash
-python3 pipeline_server.py                         # uses targets.json
+python3 pipeline_server.py                    # uses targets.json on port 8080
 python3 pipeline_server.py --config /path/to/cfg.json
-python3 pipeline_server.py --port 9090 --poll-interval 60
+python3 pipeline_server.py --help             # list all options
 ```
 
 Open the firewall if needed:
