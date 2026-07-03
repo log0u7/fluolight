@@ -1,0 +1,130 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+
+  # Job 1: report flash/RAM delta on PRs (default profile)
+  size-report:
+    name: Size report (default profile)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compile and report size delta
+        uses: arduino/compile-sketches@v1
+        with:
+          fqbn: fluo:avr:fluoeth
+          platforms: |
+            - name: fluo:avr
+              source-url: https://raw.githubusercontent.com/VashTheProgrammer/FLUOboard/master/package_fluo_index.json
+          libraries: |
+            - name: Adafruit NeoPixel
+            - name: TimedAction
+            - name: I2C_EEPROM
+          sketch-paths: ./
+          enable-deltas-report: true
+
+      - name: Post size report on PR
+        uses: arduino/report-size-deltas@v1
+        if: github.event_name == 'pull_request'
+        with:
+          sketches-report-path: sketches-reports
+
+  # Job 2: compile all profiles + flash guard (> 100% = failure)
+  build-matrix:
+    name: Build (${{ matrix.profile }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - profile: default
+            flags: ""
+          - profile: prod-minimal
+            flags: "-DVERBOSE=0 -DDHCP=1 -DEXT_LINK_CHECK=2 -DRESET_ON_FAIL=0 -DWATCHDOG=0"
+          - profile: prod-robuste
+            flags: "-DVERBOSE=1 -DDHCP=0 -DEXT_LINK_CHECK=0 -DRESET_ON_FAIL=2 -DWATCHDOG=1"
+          - profile: dev-verbose
+            flags: "-DVERBOSE=3 -DDHCP=0 -DEXT_LINK_CHECK=2 -DRESET_ON_FAIL=0 -DWATCHDOG=0"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install arduino-cli
+        uses: arduino/setup-arduino-cli@v2
+
+      - name: Cache arduino15 (core + libs)
+        uses: actions/cache@v4
+        with:
+          path: ~/.arduino15
+          key: arduino15-fluo-${{ hashFiles('.github/workflows/ci.yml') }}
+          restore-keys: arduino15-fluo-
+
+      - name: Install FLUOboard core
+        run: |
+          arduino-cli config add board_manager.additional_urls \
+            https://raw.githubusercontent.com/VashTheProgrammer/FLUOboard/master/package_fluo_index.json
+          arduino-cli core update-index
+          arduino-cli core install fluo:avr
+
+      - name: Install libraries
+        run: |
+          arduino-cli lib install "Adafruit NeoPixel"
+          arduino-cli lib install "TimedAction"
+          arduino-cli lib install "I2C_EEPROM"
+
+      - name: Compile (${{ matrix.profile }})
+        id: compile
+        run: |
+          FLASH_MAX=28672
+          FLAGS="${{ matrix.flags }}"
+
+          if [ -n "$FLAGS" ]; then
+            arduino-cli compile \
+              --fqbn fluo:avr:fluoeth \
+              --build-property "compiler.cpp.extra_flags=$FLAGS" \
+              --format json \
+              . > /tmp/build.json 2>&1
+          else
+            arduino-cli compile \
+              --fqbn fluo:avr:fluoeth \
+              --format json \
+              . > /tmp/build.json 2>&1
+          fi
+
+          FLASH=$(python3 -c "
+          import json, sys
+          data = json.load(open('/tmp/build.json'))
+          sections = data.get('builder_result', {}).get('executable_sections_size', [])
+          flash = next((s['size'] for s in sections if s['name'] in ('.text','text')), None)
+          print(flash if flash is not None else 0)
+          ")
+
+          PCT=$(python3 -c "print(round($FLASH * 100 / $FLASH_MAX, 1))")
+          echo "flash=$FLASH" >> $GITHUB_OUTPUT
+          echo "pct=$PCT"     >> $GITHUB_OUTPUT
+          echo "Profile: ${{ matrix.profile }} - Flash: $FLASH / $FLASH_MAX bytes ($PCT%)"
+
+          if [ "$FLASH" -gt "$FLASH_MAX" ]; then
+            echo "ERROR: flash overflow ($FLASH > $FLASH_MAX)"
+            exit 1
+          fi
+
+  # Job 3: lint Python test server
+  lint-python:
+    name: Lint Python (test_server.py)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Syntax check
+        run: python -m py_compile test_server.py
