@@ -179,6 +179,9 @@ static uint8_t eventId;
 /*  
  * Init Needed Objects
  */
+// Color order: the strip is physically wired GRB (not RGB).
+// NEO_RGB tells the driver to send bytes in G-R-B order, which matches the hardware.
+// All Color() / setPixelColor() calls use Color(G, R, B) convention - do NOT change this.
 Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_RGB + NEO_KHZ800); // based on led strip specs
 EthernetClient client;                                             // this board use ethernet networking
 //HttpClient http(client);                                         // HTTP client over Ethernet client.

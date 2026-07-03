@@ -177,6 +177,19 @@ Note: with `DHCP=0`, `Ethernet.begin()` blocks for up to ~60s at boot if no netw
 #define WIPE_SPEED 50
 ```
 
+### Color order (GRB)
+
+The LED strip is physically wired **GRB** (green-red-blue), not RGB. The driver is
+initialized with `NEO_RGB` so that bytes are sent in G-R-B order to match the hardware.
+
+As a result, every `Color()` and `setPixelColor()` call in the sketch passes arguments
+as `(G, R, B)` rather than the more common `(R, G, B)`. For example, pure red is
+`Color(0, 255, 0)` and pure green is `Color(255, 0, 0)`.
+
+**Do not "correct" these values or change `NEO_RGB` to `NEO_GRB`.** The colors render
+correctly on the hardware as-is. Changing either the flag or the argument order would
+invert red and green on the strip.
+
 ### Timing Intervals
 
 ```c
