@@ -76,3 +76,104 @@ void colorFade(char color, int pixel, int wait) {
   strip.fill(lastColor);
   strip.show(); 
 }
+
+/*
+ * Non-blocking animation state machine for app events (48-57).
+ * Called from loop() via animTick(); throttled internally so the
+ * HTTP / event dispatch loop is never blocked by LED effects.
+ */
+static uint8_t    aType     = 0;   // 0=idle, 1=wipe, 2=fade, 3=toggle
+static uint32_t   aColor1   = 0;
+static uint32_t   aColor2   = 0;
+static char       aChannel  = 'r';
+static int        aPixels   = 0;
+static int        aStep     = 0;
+static int        aTotal    = 0;
+static unsigned long aTimer = 0;
+static int        aWait     = 0;
+static bool       aCont     = false;
+
+void animStartWipe(uint32_t color, int pixels, int wait) {
+  aType   = 1;
+  aColor1 = color;
+  aPixels = pixels;
+  aStep   = 0;
+  aTotal  = pixels;
+  aWait   = wait;
+  aCont   = false;
+  aTimer  = millis();
+}
+
+void animStartFade(char channel, int pixels, int wait, bool continuous) {
+  aType    = 2;
+  aChannel = channel;
+  aPixels  = pixels;
+  aStep    = 0;
+  aTotal   = 510;
+  aWait    = wait;
+  aCont    = continuous;
+  aTimer   = millis();
+}
+
+void animStartToggle(uint32_t base, uint32_t blink, int wait, bool continuous) {
+  aType   = 3;
+  aColor1 = base;
+  aColor2 = blink;
+  aStep   = 0;
+  aTotal  = 2;
+  aWait   = wait;
+  aCont   = continuous;
+  strip.fill(base);
+  strip.show();
+  aTimer  = millis();
+}
+
+void animTick() {
+  if (aType == 0) return;
+
+  unsigned long now = millis();
+  if (now - aTimer < (unsigned long)aWait) return;
+  aTimer = now;
+
+  #if WATCHDOG == 1
+  wdt_reset();
+  #endif
+
+  switch (aType) {
+    case 1:
+      if (aStep < aTotal) {
+        strip.setPixelColor(aStep, aColor1);
+        strip.show();
+        aStep++;
+      }
+      if (aStep >= aTotal) aType = 0;
+      break;
+
+    case 2: {
+      uint8_t b;
+      if (aStep < 255) b = aStep;
+      else b = 509 - aStep;
+      for (int i = 0; i < aPixels; i++) {
+        switch (aChannel) {
+          case 'r': strip.setPixelColor(i, 0, b, 0); break;
+          case 'g': strip.setPixelColor(i, b, 0, 0); break;
+          case 'b': strip.setPixelColor(i, 0, 0, b); break;
+        }
+      }
+      strip.show();
+      aStep++;
+      if (aStep >= aTotal) {
+        if (aCont) aStep = 0;
+        else aType = 0;
+      }
+      break;
+    }
+
+    case 3:
+      aStep = (aStep + 1) % aTotal;
+      strip.fill(aStep == 0 ? aColor1 : aColor2);
+      strip.show();
+      if (!aCont && aStep == 0) aType = 0;
+      break;
+  }
+}
