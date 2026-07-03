@@ -21,7 +21,7 @@ void colorWipe(uint32_t color, int pixel, int wait) {
  * 
  */
 void colorBlink(uint32_t color,int pixel, int wait) {
-  uint32_t lastColor = strip.getPixelColor(pixel);
+  uint32_t lastColor = strip.getPixelColor(0);
   strip.fill(color);
   strip.show();
   delay(wait);
