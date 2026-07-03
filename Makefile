@@ -57,7 +57,7 @@ help:
 	@echo ""
 	@echo "Build options (#ifndef guards - leave empty for defaults):"
 	@echo "  VERBOSE=$(VERBOSE)         (0=off 1=errors 2=info+warn 3=debug)"
-	@echo "  DHCP=$(DHCP)              (0=DHCP 1=static IP)"
+	@echo "  DHCP=$(DHCP)              (1=DHCP 0=static IP)"
 	@echo "  EXT_LINK_CHECK=$(EXT_LINK_CHECK)  (0=auto 1=manual 2=disabled)"
 	@echo "  RESET_ON_FAIL=$(RESET_ON_FAIL)   (0=off 1-3=reset on error)"
 	@echo "  WATCHDOG=$(WATCHDOG)       (0=off 1=enabled)"

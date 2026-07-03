@@ -114,7 +114,7 @@ The board makes `GET /lights/<mac>` requests to this server every `HTTP_REQ_INTE
 ### Network Configuration
 
 ```c
-#define DHCP 0
+#define DHCP 1
 #define IP_ADDRESS  {192,168,001,127}
 #define IP_SUBNET   {255,255,255,000}
 #define IP_GATEWAY  {192,168,001,254}
