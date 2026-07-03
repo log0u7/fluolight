@@ -205,20 +205,43 @@ invert red and green on the strip.
 
 ## Status Display Codes
 
-The device interprets numeric codes received from the server (inside `<N>`):
+### App codes (server response)
+
+The device interprets numeric codes received from the server (inside `<N>`).
+All app animations are non-blocking: the HTTP polling loop keeps running during
+any LED effect. An animation replays only when the server code changes.
 
 | Code | Meaning | LED effect |
 |------|---------|------------|
-| `0` | Server error | Blinking fade red |
-| `1` | Available + vacant | Green |
-| `2` | Available + occupied | Orange |
-| `3` | Booked + vacant | Pink |
-| `4` | Booked + occupied | Red |
-| `5` | Soon in use + vacant | Orange |
-| `6` | Soon in use + occupied | Blinking orange |
-| `7` | - | Blue |
-| `8` | - | White |
-| `9` | - | Off |
+| `0` | Server error | Continuous fade red |
+| `1` | Available + vacant | Wipe green |
+| `2` | Available + occupied | Wipe orange |
+| `3` | Booked + vacant | Wipe pink |
+| `4` | Booked + occupied | Wipe red |
+| `5` | Soon in use + vacant | Wipe orange |
+| `6` | Soon in use + occupied | Continuous toggle green/orange |
+| `7` | (user-defined) | Wipe blue |
+| `8` | (user-defined) | Wipe white |
+| `9` | Off | Wipe black |
+
+### System status events (board-level)
+
+The board emits its own LED signals independently of the server to indicate
+network and hardware state. These events are also non-blocking and use the
+same animation state machine.
+
+| Event | Semantic | LED effect | Trigger |
+|-------|---------|------------|---------|
+| 1 | Board error | Fade red | Any network error when `RESET_ON_FAIL > 0` |
+| 2 | Ethernet init OK | Wipe green (1 pixel) | Boot, after DHCP/static IP assigned |
+| 3 | Ext TCP check OK | Flash white | `EXT_LINK_CHECK < 2`, every 25s, target reachable |
+| 4 | Ext TCP check KO | Flash orange | `EXT_LINK_CHECK < 2`, every 25s, target unreachable |
+| 5 | DHCP renew/rebind OK | Fade green | `DHCP=1`, every 10min, lease renewed |
+| 6 | DHCP renew/rebind KO | Fade red | `DHCP=1`, every 10min, lease failed |
+
+Board reset: the strip briefly fills blue (~300ms) just before the watchdog
+triggers a reboot. This happens in `reset()` directly, independently of the
+event system.
 
 ## Protocol
 
@@ -354,7 +377,7 @@ does not flash red on a momentary network blip.
 - **No serial output after connect**: with `VERBOSE > 1` the board waits for a serial connection before running. Open the monitor then press the reset button on the board.
 - **LED stuck on orange/red at boot, no HTTP activity**: board is waiting for DHCP with no network cable connected. Connect the Ethernet cable before powering on.
 - **`ERR:HTTP:SND:KO`**: server unreachable. Check `SERVER`/`SERVERPORT` in `fluolight.ino`, verify the server is running, and check the firewall on the server machine (port 8080).
-- **LED displays pulsing red**: hardware or network error (board-level `eventId=1`).
+- **LED displays pulsing red**: board error event (system event 1) or server error code `<0>`. Check serial output for `ERR:` lines.
 - **Upload fails with "port not found"**: the 32U4 bootloader may have timed out. Double-press the reset button to force bootloader mode, then retry `make flash`.
 - **`brltty` installed on Ubuntu 24.04**: this can interfere with CH340-based boards but does not affect the FLUOboard (ATmega32U4, `cdc_acm` driver).
 
