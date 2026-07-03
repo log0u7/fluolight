@@ -117,6 +117,7 @@ void netExtLinkStatus() {
     ExternalLinkIsActive = 0;
     eventId = 7;
   }
+  client.stop();  // release socket immediately after test
 }
 #endif
 
