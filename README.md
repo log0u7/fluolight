@@ -96,7 +96,7 @@ Note: when `VERBOSE > 1`, the board waits for a serial connection before startin
 ```
 
 - `SERVER` - FQDN or IP address of the HTTP server
-- `SERVERPORT` - Port number of the HTTP server (default: `8080`, matches `test_server.py`)
+- `SERVERPORT` - Port number of the HTTP server (default: `8080`, matches `server/test_server.py`)
 
 The board makes `GET /lights/<mac>` requests to this server every `HTTP_REQ_INTERVAL` ms and expects a response body containing `<N>` where `N` is a digit 0-9 (see Status Display Codes).
 
@@ -260,9 +260,9 @@ The server must respond with a body containing `<N>` where `N` is a digit 0-9, f
 A local test server is provided to validate the LED display without a production server.
 
 ```bash
-python3 test_server.py
-# or
 make server
+# or directly:
+python3 server/test_server.py
 ```
 
 The server listens on `0.0.0.0:8080` and cycles automatically through all 10 status codes (one per request received from the board). Each `GET /lights/<mac>` request advances the cycle by one step.
@@ -275,10 +275,10 @@ sudo ufw allow from 192.168.1.0/24 to any port 8080 proto tcp
 
 ## Pipeline Status Server
 
-`pipeline_server.py` is a production-ready server that polls GitHub Actions
+`server/pipeline_server.py` is a production-ready server that polls GitHub Actions
 and GitLab CI pipelines and exposes their state to the board via the same
 `GET /lights/<mac>` protocol. Each board (identified by its MAC address) is
-mapped to one CI/CD project. `test_server.py` remains available for
+mapped to one CI/CD project. `server/test_server.py` remains available for
 offline testing.
 
 ### Requirements
@@ -289,7 +289,7 @@ offline testing.
 
 ### Configuration
 
-Copy `targets.example.json` to `targets.json` (gitignored) and fill in your
+Copy `server/targets.example.json` to `targets.json` (gitignored) and fill in your
 targets:
 
 ```json
@@ -336,9 +336,9 @@ export GITLAB_TOKEN_gitlab_example_com=glpat-...
 ### Running
 
 ```bash
-python3 pipeline_server.py                    # uses targets.json on port 8080
-python3 pipeline_server.py --config /path/to/cfg.json
-python3 pipeline_server.py --help             # list all options
+python3 server/pipeline_server.py                    # uses targets.json on port 8080
+python3 server/pipeline_server.py --config /path/to/cfg.json
+python3 server/pipeline_server.py --help             # list all options
 ```
 
 Open the firewall if needed:

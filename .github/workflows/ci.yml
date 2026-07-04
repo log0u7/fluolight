@@ -111,7 +111,7 @@ jobs:
 
   # Job 3: lint Python test server
   lint-python:
-    name: Lint Python (test_server.py)
+    name: Lint Python (server scripts)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -122,5 +122,5 @@ jobs:
 
       - name: Syntax check
         run: |
-          python -m py_compile test_server.py
-          python -m py_compile pipeline_server.py
+          python -m py_compile server/test_server.py
+          python -m py_compile server/pipeline_server.py

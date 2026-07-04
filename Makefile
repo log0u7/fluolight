@@ -49,7 +49,7 @@ help:
 	@echo "  flash     Compile then upload (compile + upload)"
 	@echo "  monitor   Open the serial monitor ($(BAUD) baud)"
 	@echo "  board     List connected boards"
-	@echo "  server    Run the local test server (test_server.py)"
+	@echo "  server    Run the local test server (server/test_server.py)"
 	@echo "  clean     Remove build artifacts"
 	@echo ""
 	@echo "Variables (overridable):"
@@ -88,7 +88,7 @@ board:
 	arduino-cli board list
 
 server:
-	python3 test_server.py
+	python3 server/test_server.py
 
 clean:
 	arduino-cli compile --fqbn $(FQBN) --clean $(SKETCH)

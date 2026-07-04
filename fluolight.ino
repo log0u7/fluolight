@@ -27,10 +27,10 @@
 /* 
  * str HTTP App Server
  * FQDN or IP address of the target server.
- * For local testing use the IP of the machine running test_server.py.
+ * For local testing use the IP of the machine running server/test_server.py.
  */
 #define SERVER "192.168.1.65"
-// int HTTP port of the target server (test_server.py default: 8080)
+// int HTTP port of the target server (server/test_server.py default: 8080)
 #define SERVERPORT 8080
 
 /* 
