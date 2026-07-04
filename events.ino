@@ -47,6 +47,9 @@ void eventDisplay(int event){
 
 void eventDispatch(){
   const __FlashStringHelper* eventTag = F("LED:DISP");
+  // Guard: replay app animation only when server code changes.
+  // Declared here (not inside the switch) so system event cases can reset it.
+  static int lastAppEvent = -1;
   switch(eventId) {
     #if VERBOSE >= 4
     case 0:
@@ -60,22 +63,29 @@ void eventDispatch(){
       animStartFade('r', 1, FADE_SPEED, false);
     break;
     case 2:
+      // System event overwrites the strip: invalidate guard so the current
+      // app code replays and restores the correct color afterward.
+      lastAppEvent = -1;
       #if VERBOSE >= 2
       serialMessage('i',eventTag, F("Eth Init OK"));
       #endif
       animStartWipe(strip.Color(40,226,0), 1, 100);
     break;
     case 3:
+      // Brief single flash: routine positive event, should be barely noticeable.
+      lastAppEvent = -1;
       #if VERBOSE >= 2
       serialMessage('i',eventTag, F("TCP Check OK"));
       #endif
-      animStartToggle(strip.getPixelColor(0), strip.Color(1,1,1), 50, false);
+      animStartToggle(strip.getPixelColor(0), strip.Color(30,30,30), 80, false, 1);
     break;
     case 4:
+      // Insistent 3-blink orange: signals a connectivity problem.
+      lastAppEvent = -1;
       #if VERBOSE >= 2
       serialMessage('i',eventTag, F("TCP Check KO"));
       #endif
-      animStartToggle(strip.getPixelColor(0), strip.Color(20,113,0), 100, false);
+      animStartToggle(strip.getPixelColor(0), strip.Color(20,113,0), 200, false, 3);
     break;
     case 5:
       #if VERBOSE >= 2
@@ -93,7 +103,6 @@ void eventDispatch(){
      * Events for ASCII server responses 
      * Replay only when app code changes (lastAppEvent guard).
      */
-    static int lastAppEvent = -1;
     case 48:
       if (lastAppEvent == eventId) break;
       lastAppEvent = eventId;
@@ -148,7 +157,7 @@ void eventDispatch(){
       #if VERBOSE >= 2
       serialMessage('i',eventTag, F("6 = soon_in_use+occupied = blinking orange"));
       #endif
-      animStartToggle(strip.Color(40,226,0), strip.Color(20,113,0), 500, true);
+      animStartToggle(strip.Color(40,226,0), strip.Color(20,113,0), 500, true, 0);
     break;
     case 55:
       if (lastAppEvent == eventId) break;
