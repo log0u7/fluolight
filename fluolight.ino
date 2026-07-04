@@ -127,8 +127,8 @@
 #define LED_PIN    6    // Led pin of the strip
 #define LED_COUNT  7    // number of led on strip
 #define BRIGHTNESS 16   // 0 (min) to 255 (max)
-#define FADE_SPEED 5    // in ms
-#define WIPE_SPEED 50   // in ms
+#define FADE_SPEED 8    // in ms per step (510 steps = ~4s per fade cycle)
+#define WIPE_SPEED 70   // in ms per pixel (7 pixels = ~0.5s full wipe)
 
 // SERIAL BITRATE
 #define SERIAL_BAUDS 115200 //9600

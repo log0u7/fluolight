@@ -92,6 +92,7 @@ static int        aTotal    = 0;
 static unsigned long aTimer = 0;
 static int        aWait     = 0;
 static bool       aCont     = false;
+static uint8_t    aRepeat   = 0;   // toggle: remaining blink cycles (0 = infinite)
 
 void animStartWipe(uint32_t color, int pixels, int wait) {
   aType   = 1;
@@ -115,17 +116,20 @@ void animStartFade(char channel, int pixels, int wait, bool continuous) {
   aTimer   = millis();
 }
 
-void animStartToggle(uint32_t base, uint32_t blink, int wait, bool continuous) {
-  aType   = 3;
-  aColor1 = base;
-  aColor2 = blink;
-  aStep   = 0;
-  aTotal  = 2;
-  aWait   = wait;
-  aCont   = continuous;
+// continuous=true : toggle forever (app code 6)
+// continuous=false, repeat=N : N blink cycles then stop on base (system events)
+void animStartToggle(uint32_t base, uint32_t blink, int wait, bool continuous, uint8_t repeat) {
+  aType    = 3;
+  aColor1  = base;
+  aColor2  = blink;
+  aStep    = 0;
+  aTotal   = 2;
+  aWait    = wait;
+  aCont    = continuous;
+  aRepeat  = repeat;
   strip.fill(base);
   strip.show();
-  aTimer  = millis();
+  aTimer   = millis();
 }
 
 void animTick() {
@@ -173,7 +177,14 @@ void animTick() {
       aStep = (aStep + 1) % aTotal;
       strip.fill(aStep == 0 ? aColor1 : aColor2);
       strip.show();
-      if (!aCont && aStep == 0) aType = 0;
+      if (!aCont && aStep == 0) {
+        // completed one full blink cycle (base -> flash -> base)
+        if (aRepeat > 1) {
+          aRepeat--;  // more cycles to go
+        } else {
+          aType = 0;  // done
+        }
+      }
       break;
   }
 }
