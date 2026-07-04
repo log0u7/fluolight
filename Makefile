@@ -1,7 +1,7 @@
 FQBN    ?= fluo:avr:fluoeth
 # Auto-detect the FLUOboard serial port (FQBN match, then VID 0x2ecf fallback).
 # Override with: make <target> PORT=/dev/ttyACMx
-PORT    ?= $(shell arduino-cli board list --format json 2>/dev/null | python3 detect_port.py $(FQBN))
+PORT    ?= $(shell arduino-cli board list --format json 2>/dev/null | python3 -c "import json,sys;f='$(FQBN)';d=json.load(sys.stdin);[print(p['port']['address'])or sys.exit(0) for p in d.get('detected_ports',[]) for b in p.get('matching_boards',[]) if b.get('fqbn')==f];[print(p['port']['address'])or sys.exit(0) for p in d.get('detected_ports',[]) if p['port'].get('properties',{}).get('vid','').lower()=='0x2ecf']" 2>/dev/null)
 BAUD    ?= 115200
 SKETCH  ?= .
 # Build options (overridable, match #ifndef guards in fluolight.ino)
