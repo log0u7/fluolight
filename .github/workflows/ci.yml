@@ -16,7 +16,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install TimedAction
-        run: git clone --depth 1 https://github.com/log0u7/TimedAction.git /tmp/TimedAction
+        run: arduino-cli lib install --git-url https://github.com/log0u7/TimedAction.git
 
       - name: Compile and report size delta
         uses: arduino/compile-sketches@v1
@@ -26,8 +26,7 @@ jobs:
             - name: arduino:avr
             - name: fluo:avr
               source-url: https://raw.githubusercontent.com/VashTheProgrammer/FLUOboard/master/package_fluo_index.json
-          libraries: |
-            - source-path: /tmp/TimedAction
+          libraries: '[]'
           sketch-paths: ./
           enable-deltas-report: true
 
@@ -76,7 +75,7 @@ jobs:
           arduino-cli core install fluo:avr
 
       - name: Install TimedAction
-        run: git clone --depth 1 https://github.com/log0u7/TimedAction.git /tmp/TimedAction
+        run: arduino-cli lib install --git-url https://github.com/log0u7/TimedAction.git
 
       - name: Compile (${{ matrix.profile }})
         id: compile
@@ -88,7 +87,6 @@ jobs:
 
           if ! arduino-cli compile \
             --fqbn fluo:avr:fluoeth \
-            --libraries /tmp/TimedAction \
             "${EXTRA_PROPS[@]}" \
             --format json \
             . > /tmp/build.json 2>&1; then
