@@ -4,15 +4,17 @@
  * 
  **/
 
-/* 
- * void serialMessage() write standardized messages to serial monitor 
- * char type        : (e)rror, (w)arning, (i)nformation, (d)ebug
- * const __FlashStringHelper* tag     : stage marker (use F("..."))
- * const __FlashStringHelper* message : message (use F("...") or const char*)
- *  
- * // write : "INFO::CORE::SAMPLE: Hello World !" to serial
- * serialMessage('i', 'CORE::SAMPLE', "Hello World !") 
- *  
+/*
+ * Write standardized messages to serial monitor.
+ *
+ * char type : (e)rror, (w)arning, (i)nformation, (d)ebug
+ * const __FlashStringHelper* tag : stage marker (use F("..."))
+ * const __FlashStringHelper* message : flash string message (use F("..."))
+ * const char* message : RAM string message
+ *
+ * Examples:
+ *   serialMessage('e', F("NET:LNK"), F("KO"));
+ *   serialMessage('i', F("ETH:INIT"), someCharPtr);
  */
 #if VERBOSE >= 1
 static void _serialMessageHeader(char type, const __FlashStringHelper* tag) {
