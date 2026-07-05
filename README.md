@@ -356,4 +356,3 @@ arduino-cli compile --fqbn fluo:avr:fluoeth \
   --build-property compiler.cpp.extra_flags="-DVERBOSE=1 -DDHCP=0 -DRESET_ON_FAIL=2 -DWATCHDOG=1" .
 ```
 
-See [`BUILD_SIZES.md`](BUILD_SIZES.md) for the exhaustive build size matrix (192 combinations) and named profiles (prod minimal, prod robuste, dev).

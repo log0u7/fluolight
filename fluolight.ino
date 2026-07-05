@@ -2,9 +2,7 @@
  * fluolight
  *
  * Board Manager : https://raw.githubusercontent.com/VashTheProgrammer/FLUOboard/master/package_fluo_index.json
- *  
- * See BUILD_SIZES.md for flash/RAM usage by build profile.
- * 
+ *
  */
 
 /*
