@@ -73,7 +73,7 @@ arduino-cli monitor -p /dev/ttyACM0 -c baudrate=115200
 
 ## Configuration
 
-All configuration is done through preprocessor definitions in `fluolight.ino`.
+All configuration is done through preprocessor definitions in `config.h`.
 
 ### Serial Output Verbosity
 
@@ -304,7 +304,7 @@ authentication, and usage instructions.
 
 1. Install arduino-cli and the FLUOboard core (see Board Setup above).
 2. Install the required libraries (see Dependencies below).
-3. Configure `fluolight.ino` (server address, port, MAC mode, network settings).
+3. Configure `config.h` (server address, port, MAC mode, network settings).
 4. Compile and upload: `make flash`
 5. Connect the board to your network (Ethernet cable required at boot when using DHCP).
 6. Open the serial monitor to verify startup: `make monitor`
@@ -315,7 +315,7 @@ authentication, and usage instructions.
 - **Board not detected at all** (`/dev/ttyACM0` missing): the USB cable is charge-only (no data lines). Replace with a full USB cable.
 - **No serial output after connect**: with `VERBOSE > 1` the board waits for a serial connection before running. Open the monitor then press the reset button on the board.
 - **LED stuck on orange/red at boot, no HTTP activity**: board is waiting for DHCP with no network cable connected. Connect the Ethernet cable before powering on.
-- **`ERR:HTTP:SND:KO`**: server unreachable. Check `SERVER`/`SERVERPORT` in `fluolight.ino`, verify the server is running, and check the firewall on the server machine (port 8080).
+- **`ERR:HTTP:SND:KO`**: server unreachable. Check `SERVER`/`SERVERPORT` in `config.h`, verify the server is running, and check the firewall on the server machine (port 8080).
 - **LED displays pulsing red**: board error event (system event 1) or server error code `<0>`. Check serial output for `ERR:` lines.
 - **Upload fails with "port not found"**: the 32U4 bootloader may have timed out. Double-press the reset button to force bootloader mode, then retry `make flash`.
 - **`brltty` installed on Ubuntu 24.04**: this can interfere with CH340-based boards but does not affect the FLUOboard (ATmega32U4, `cdc_acm` driver).
@@ -349,7 +349,7 @@ Flash usage is sensitive to verbosity and network options (see flash impact note
 
 ### Build size matrix
 
-The five main options (`VERBOSE`, `DHCP`, `EXT_LINK_CHECK`, `RESET_ON_FAIL`, `WATCHDOG`) are guarded by `#ifndef` in `fluolight.ino` and can be overridden at compile time:
+The five main options (`VERBOSE`, `DHCP`, `EXT_LINK_CHECK`, `RESET_ON_FAIL`, `WATCHDOG`) are guarded by `#ifndef` in `config.h` and can be overridden at compile time:
 
 ```bash
 arduino-cli compile --fqbn fluo:avr:fluoeth \
