@@ -15,6 +15,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install TimedAction
+        run: git clone --depth 1 https://github.com/log0u7/TimedAction.git /tmp/TimedAction
+
       - name: Compile and report size delta
         uses: arduino/compile-sketches@v1
         with:
@@ -24,7 +27,7 @@ jobs:
             - name: fluo:avr
               source-url: https://raw.githubusercontent.com/VashTheProgrammer/FLUOboard/master/package_fluo_index.json
           libraries: |
-            - source-url: https://github.com/log0u7/TimedAction.git
+            - source-path: /tmp/TimedAction
           sketch-paths: ./
           enable-deltas-report: true
 
