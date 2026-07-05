@@ -20,10 +20,6 @@
 #include <avr/wdt.h>            // https://www.arduino.cc/reference/en/libraries/watchdog/
 #endif
 #include <TimedAction.h>        // https://playground.arduino.cc/Code/TimedAction/
-/*
-#include <b64.h>
-#include <HttpClient.h>         // https://github.com/amcewen/HttpClient
-*/
 
 /*
  *  Init Global Variables and Constants 
@@ -43,7 +39,6 @@ static uint8_t eventId;
 // All Color() / setPixelColor() calls use Color(G, R, B) convention - do NOT change this.
 Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_RGB + NEO_KHZ800); // based on led strip specs
 EthernetClient client;                                             // this board use ethernet networking
-//HttpClient http(client);                                         // HTTP client over Ethernet client.
 #if MACSET == 0
 I2C_eeprom memory(DEVICEADDRESS, EE_24AA025_MAXBYTES);             // only used to fetch mac adress from eeprom
 #endif

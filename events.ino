@@ -16,14 +16,14 @@ void eventDisplay(int event){
  *   id  Semantic              Effect                  Emitter
  *   --  --------------------  ----------------------  -----------------------
  *   0   Idle / no event       (none)                  end of each dispatch
- *   1   Board error           fade red (non-blocking)  Error() - core.ino
+ *   1   Board error           fade red (non-blocking)  Error() - error.ino
  *   2   Ethernet init OK      wipe green              netInitSetup() - network.ino
  *   3   Ext TCP check OK      blink white             netExtLinkStatus() OK
  *   4   Ext TCP check KO      blink orange            netExtLinkStatus() KO
  *   5   DHCP renew/rebind OK  fade green              netDhcpRenew() cases 2,4
  *   6   DHCP renew/rebind KO  fade red                netDhcpRenew() cases 1,3
  *
- * Board reset: handled directly in reset() - core.ino (brief blue fill,
+ * Board reset: handled directly in reset() - error.ino (brief blue fill,
  * no eventId; the board reboots 15ms later via watchdog).
  *
  * App events (set by httpRead() from the server ASCII response '0'-'9'):
