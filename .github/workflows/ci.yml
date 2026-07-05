@@ -24,7 +24,7 @@ jobs:
             - name: fluo:avr
               source-url: https://raw.githubusercontent.com/VashTheProgrammer/FLUOboard/master/package_fluo_index.json
           libraries: |
-            - source-path: ./libraries/TimedAction
+            - source-url: https://github.com/log0u7/TimedAction.git
           sketch-paths: ./
           enable-deltas-report: true
 
@@ -72,6 +72,9 @@ jobs:
           arduino-cli core install arduino:avr
           arduino-cli core install fluo:avr
 
+      - name: Install TimedAction
+        run: git clone --depth 1 https://github.com/log0u7/TimedAction.git /tmp/TimedAction
+
       - name: Compile (${{ matrix.profile }})
         id: compile
         run: |
@@ -82,7 +85,7 @@ jobs:
 
           if ! arduino-cli compile \
             --fqbn fluo:avr:fluoeth \
-            --libraries ./libraries \
+            --libraries /tmp/TimedAction \
             "${EXTRA_PROPS[@]}" \
             --format json \
             . > /tmp/build.json 2>&1; then

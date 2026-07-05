@@ -4,6 +4,7 @@ FQBN    ?= fluo:avr:fluoeth
 PORT    ?= $(shell arduino-cli board list --format json 2>/dev/null | python3 -c "import json,sys;f='$(FQBN)';d=json.load(sys.stdin);[print(p['port']['address'])or sys.exit(0) for p in d.get('detected_ports',[]) for b in p.get('matching_boards',[]) if b.get('fqbn')==f];[print(p['port']['address'])or sys.exit(0) for p in d.get('detected_ports',[]) if p['port'].get('properties',{}).get('vid','').lower()=='0x2ecf']" 2>/dev/null)
 BAUD    ?= 115200
 SKETCH  ?= .
+DEPS_DIR ?= deps
 # Build options (overridable, match #ifndef guards in fluolight.ino)
 # Example: make flash VERBOSE=1 DHCP=0 RESET_ON_FAIL=2 WATCHDOG=1
 VERBOSE        ?=
@@ -38,7 +39,7 @@ endif
 
 .DEFAULT_GOAL := help
 
-.PHONY: help compile upload flash monitor board server clean
+.PHONY: help compile upload flash monitor board server deps clean
 
 help:
 	@echo "Usage: make <target> [VAR=value ...]"
@@ -50,6 +51,7 @@ help:
 	@echo "  monitor   Open the serial monitor ($(BAUD) baud)"
 	@echo "  board     List connected boards"
 	@echo "  server    Run the local test server (server/test_server.py)"
+	@echo "  deps      Fetch dependencies (TimedAction) into $(DEPS_DIR)/"
 	@echo "  clean     Remove build artifacts"
 	@echo ""
 	@echo "Variables (overridable):"
@@ -71,8 +73,12 @@ help:
 	@echo ""
 	@echo "See BUILD_SIZES.md for the full build size matrix."
 
-compile:
-	arduino-cli compile --fqbn $(FQBN) $(_BUILD_PROP) $(SKETCH)
+$(DEPS_DIR)/TimedAction:
+	mkdir -p $(DEPS_DIR)
+	git clone --depth 1 https://github.com/log0u7/TimedAction.git $(DEPS_DIR)/TimedAction
+
+compile: $(DEPS_DIR)/TimedAction
+	arduino-cli compile --fqbn $(FQBN) $(_BUILD_PROP) --libraries $(DEPS_DIR) $(SKETCH)
 
 upload:
 	@test -n "$(PORT)" || { echo "No FLUOboard detected. Connect the board or pass PORT=/dev/ttyACMx"; exit 1; }
@@ -89,6 +95,8 @@ board:
 
 server:
 	python3 server/test_server.py
+
+deps: $(DEPS_DIR)/TimedAction
 
 clean:
 	arduino-cli compile --fqbn $(FQBN) --clean $(SKETCH)
