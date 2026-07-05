@@ -78,7 +78,7 @@ All configuration is done through preprocessor definitions in `fluolight.ino`.
 ### Serial Output Verbosity
 
 ```c
-#define VERBOSE 2
+#define VERBOSE 1
 ```
 
 - `0` - No output (hardened production)
@@ -131,15 +131,15 @@ Note: with `DHCP=0`, `Ethernet.begin()` blocks for up to ~60s at boot if no netw
 ### External Link Check
 
 ```c
-#define EXT_LINK_CHECK 2
+#define EXT_LINK_CHECK 0
 #define EXT_LINK_SERVER {9,9,9,9}
 #define EXT_LINK_PORT 53
 ```
 
 - `EXT_LINK_CHECK`
-  - `0` - Auto (use DNS server from DHCP) - flash impact: ~+1%
-  - `1` - Manual (use `EXT_LINK_SERVER`) - flash impact: ~+1%
-  - `2` - Disabled
+  - `0` - Disabled
+  - `1` - Auto (use DNS server from DHCP) - flash impact: ~+1%
+  - `2` - Manual (use `EXT_LINK_SERVER`) - flash impact: ~+1%
 
 ### Watchdog Configuration
 
@@ -172,6 +172,22 @@ Note: with `DHCP=0`, `Ethernet.begin()` blocks for up to ~60s at boot if no netw
 > `WATCHDOG` covers CPU freeze (hardware timer); `RESET_ON_FAIL` covers recurring
 > network errors (link down, DHCP fail, external link unreachable).
 > Enabling both is safe and recommended for unattended operation.
+
+### Build examples
+
+```bash
+# Production: errors only, hardware watchdog, auto-reset on network errors
+make flash VERBOSE=1 WATCHDOG=1 RESET_ON_FAIL=2
+
+# Full debug: max verbosity, external link check on 9.9.9.9
+make flash VERBOSE=3 EXT_LINK_CHECK=2
+
+# All features enabled (debug + watchdog + reset on fail + ext link auto)
+make flash VERBOSE=3 DHCP=1 EXT_LINK_CHECK=1 WATCHDOG=1 RESET_ON_FAIL=2
+
+# Minimal flash footprint: no watchdog, no reset, no serial output
+make compile VERBOSE=0 DHCP=1 EXT_LINK_CHECK=0 RESET_ON_FAIL=0 WATCHDOG=0
+```
 
 ### LED Strip Configuration
 
@@ -324,7 +340,7 @@ https://raw.githubusercontent.com/VashTheProgrammer/FLUOboard/master/package_flu
 
 ## Memory Usage
 
-With the default configuration (`VERBOSE=2`, `DHCP=0`, `EXT_LINK_CHECK=2`, `RESET_ON_FAIL=0`, `WATCHDOG=0`):
+With the default configuration (`VERBOSE=1`, `DHCP=0`, `EXT_LINK_CHECK=0`, `RESET_ON_FAIL=0`, `WATCHDOG=0`):
 
 - Program storage: ~25,880 / 28,672 bytes (90%)
 - Dynamic memory: ~912 / 2,560 bytes (35%)
