@@ -22,7 +22,7 @@ targets:
   "port": 8080,
   "poll_interval": 30,
   "targets": {
-    "5410ecee3ea0": {
+    "ffeeddccbbaa": {
       "provider": "github",
       "repo": "owner/repository",
       "branch": "main"
@@ -38,7 +38,7 @@ targets:
 ```
 
 The MAC address key must match the board's MAC in lowercase without
-separators (printed at boot: `INF:ETH:INIT: 5410ecee3ea0`).
+separators (printed at boot: `INF:ETH:INIT: ffeeddccbbaa`).
 
 For self-hosted GitLab instances, set `host` to your instance hostname.
 
