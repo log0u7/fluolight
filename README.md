@@ -149,8 +149,8 @@ Note: with `DHCP=0`, `Ethernet.begin()` blocks for up to ~60s at boot if no netw
 ```
 
 - `WATCHDOG`
-  - `0` - Disabled
-  - `1` - Enabled (hardware watchdog via `avr/wdt.h`)
+  - `0` - Disabled (enable `RESET_ON_FAIL` instead for network error recovery)
+  - `1` - Enabled (hardware watchdog via `avr/wdt.h`, auto-reboot on CPU freeze, 8s timeout)
 
 ### Reset On Failure
 
@@ -161,12 +161,17 @@ Note: with `DHCP=0`, `Ethernet.begin()` blocks for up to ~60s at boot if no netw
 ```
 
 - `RESET_ON_FAIL`
-  - `0` - Disabled
+  - `0` - Disabled (enable `WATCHDOG` instead for CPU freeze recovery)
   - `1` - Reset on link failure - flash impact: ~+1%
   - `2` - Reset on link, DHCP, or external link failures after `MAX_RETRY` attempts - flash impact: ~+2%
   - `3` - Reset on all errors after `MAX_RETRY` attempts - flash impact: ~+2%
 - `REBOOT_TIMEOUT` - Time in ms before a long reset triggers
 - `MAX_RETRY` - Number of consecutive failures before reset
+
+> **Production recommendation**: enable at least one of `WATCHDOG` or `RESET_ON_FAIL`.
+> `WATCHDOG` covers CPU freeze (hardware timer); `RESET_ON_FAIL` covers recurring
+> network errors (link down, DHCP fail, external link unreachable).
+> Enabling both is safe and recommended for unattended operation.
 
 ### LED Strip Configuration
 

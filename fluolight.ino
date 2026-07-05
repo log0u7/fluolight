@@ -102,8 +102,13 @@
 
 /* 
  * bool Hardware Watchdog Timer
- * 0 -> WDT DISABLE (YOU MAY WANT TO ENABLE RESET ON FAIL)
- * 1 -> WDT ENABLE 
+ * 0 -> WDT DISABLED (enable RESET_ON_FAIL instead)
+ * 1 -> WDT ENABLED (auto-reboot if CPU freezes, 8s timeout)
+ *
+ * At least one of WATCHDOG or RESET_ON_FAIL must be enabled
+ * for unattended production use. Enabling both is safe.
+ * WATCHDOG covers CPU freeze; RESET_ON_FAIL covers network
+ * error loops.
  */
 #ifndef WATCHDOG
 #define WATCHDOG 0
@@ -111,11 +116,11 @@
 #define WATCHDOG_TIMER WDTO_8S
 
 /*
- * int Reset On Faill  
- * 0 -> NO (YOU SHOULD ENABLE AND SETUP WATCHDOG TIMER)
- * 1 -> RESET BOARD ON "LINK" FAIL                                              ! Memory Storage Space ~+1%
- * 2 -> RESET BOARD ON "LINK, DHCP, EXTERNAL LINK" WHEN MAX_RETRY IS REACHED    ! Memory Storage Space ~+2%
- * 3 -> RESET BOARD ON ALL ERROR FOUND WHEN MAX_RETRY IS REACHED (NEEDED?)      ! Memory Storage Space ~+2%
+ * int Reset On Failure
+ * 0 -> DISABLED (enable WATCHDOG instead)
+ * 1 -> Reset on link failure                     flash ~+1%
+ * 2 -> Reset on link, DHCP, external link fail   flash ~+2%
+ * 3 -> Reset on all errors                       flash ~+2%
  */
 #ifndef RESET_ON_FAIL
 #define RESET_ON_FAIL 0
