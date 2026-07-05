@@ -15,8 +15,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: arduino/setup-arduino-cli@v2
+
       - name: Install TimedAction
-        run: arduino-cli lib install --git-url https://github.com/log0u7/TimedAction.git
+        run: |
+          arduino-cli config set library.enable_unsafe_install true
+          arduino-cli lib install --git-url https://github.com/log0u7/TimedAction.git
 
       - name: Compile and report size delta
         uses: arduino/compile-sketches@v1
@@ -75,7 +79,9 @@ jobs:
           arduino-cli core install fluo:avr
 
       - name: Install TimedAction
-        run: arduino-cli lib install --git-url https://github.com/log0u7/TimedAction.git
+        run: |
+          arduino-cli config set library.enable_unsafe_install true
+          arduino-cli lib install --git-url https://github.com/log0u7/TimedAction.git
 
       - name: Compile (${{ matrix.profile }})
         id: compile

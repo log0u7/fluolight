@@ -72,6 +72,7 @@ help:
 	@echo "See BUILD_SIZES.md for the full build size matrix."
 
 compile:
+	arduino-cli config set library.enable_unsafe_install true >/dev/null 2>&1 || true
 	arduino-cli lib install --git-url https://github.com/log0u7/TimedAction.git >/dev/null 2>&1 || true
 	arduino-cli compile --fqbn $(FQBN) $(_BUILD_PROP) $(SKETCH)
 
