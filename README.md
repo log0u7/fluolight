@@ -387,7 +387,7 @@ does not flash red on a momentary network blip.
 - Ethernet (bundled with Arduino AVR core)
 - I2C_EEPROM
 - Adafruit NeoPixel
-- TimedAction
+- TimedAction (fetched automatically by `make compile`, or `make deps`)
 - avr/wdt (bundled, used when `WATCHDOG=1` or `RESET_ON_FAIL > 0`)
 
 ## Board Compatibility
