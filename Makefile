@@ -69,7 +69,7 @@ help:
 	@echo "  make compile VERBOSE=0 DHCP=1"
 	@echo "  make flash PORT=/dev/ttyACM1"
 	@echo ""
-	@echo "See BUILD_SIZES.md for the full build size matrix."
+  @echo "Build profiles are tested in CI (4 profiles)."
 
 compile:
 	arduino-cli config set library.enable_unsafe_install true >/dev/null 2>&1 || true
