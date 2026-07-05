@@ -10,10 +10,10 @@ static const IPAddress subnet(IP_SUBNET);
 static const IPAddress gateway(IP_GATEWAY);      
 static const IPAddress dns(IP_DNS);     
 #endif 
-#if EXT_LINK_CHECK < 2
+#if EXT_LINK_CHECK != 0
 static uint8_t ExternalLinkIsActive;
 #endif
-#if EXT_LINK_CHECK == 1   
+#if EXT_LINK_CHECK == 2
 static const IPAddress extLinkIp(EXT_LINK_SERVER);
 static const int extLinkPort = EXT_LINK_PORT;
 #endif
@@ -91,9 +91,9 @@ void netLinkStatus() {
 /*
  * Check External TCP port
  */
-#if EXT_LINK_CHECK < 2
+#if EXT_LINK_CHECK != 0
 void netExtLinkStatus() {
-  #if EXT_LINK_CHECK == 0
+  #if EXT_LINK_CHECK == 1
   if (client.connect(Ethernet.dnsServerIP(), 53))
   #else
   if (client.connect(extLinkIp, extLinkPort))

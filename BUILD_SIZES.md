@@ -2,12 +2,13 @@
 
 Board: `fluo:avr:fluoeth` (ATmega32U4) - Flash max: 28672 bytes - RAM max: 2560 bytes
 
-Baseline (default config `VERBOSE=2 DHCP=1 EXT_LINK_CHECK=2 RESET_ON_FAIL=0 WATCHDOG=0`): **25880 bytes flash (90%) / 912 bytes RAM (35%)**
+Baseline (previous default `VERBOSE=2 DHCP=1 EXT_LINK_CHECK=2 RESET_ON_FAIL=0 WATCHDOG=0`): **25880 bytes flash (90%) / 912 bytes RAM (35%)**  
+Default config is now `VERBOSE=1 EXT_LINK_CHECK=0 RESET_ON_FAIL=0 WATCHDOG=0` (see rebuild below for exact size).
 
 Generated: 2026-07-03 with `arduino-cli` - options injected via `compiler.cpp.extra_flags` (`#ifndef` guards in `fluolight.ino`).
 
 > `DHCP`: `0` = static IP (lighter), `1` = DHCP client enabled (+13% flash)
-> `EXT_LINK_CHECK`: `0` = auto (DNS), `1` = manual server, `2` = disabled
+> `EXT_LINK_CHECK`: `0` = disabled, `1` = auto (DNS), `2` = manual server
 > Logs `INF:ETH::IP/GW/DNS` visible at `VERBOSE >= 2` only.
 
 ## Profiles

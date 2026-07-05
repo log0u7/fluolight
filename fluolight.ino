@@ -21,7 +21,7 @@
  * 3 Errors, Warn, Info & Debug w/ sync (Devel Environments w/ Serial Only )  ! Memory Storage Space ~+11% 
  */
 #ifndef VERBOSE
-#define VERBOSE 2
+#define VERBOSE 1
 #endif
 
 /* 
@@ -67,14 +67,14 @@
 #define IP_GATEWAY  {192,168,001,254}
 #define IP_DNS      {192,168,000,254}
 
-/* 
- * int EXTERNAL LINK CHECK 
- * 0 -> AUTO    Use DNS Server provided Manualy or by DHCP  ! Memory Storage Space ~+1%
- * 1 -> MANUAL                                              ! Memory Storage Space ~+1%
- * 2 -> DISABLED
- */  
+/*
+ * int External link check
+ * 0 -> DISABLED
+ * 1 -> AUTO    Use DNS Server provided by DHCP              ! Memory Storage Space ~+1%
+ * 2 -> MANUAL  Use EXT_LINK_SERVER (default 9.9.9.9:53)     ! Memory Storage Space ~+1%
+ */
 #ifndef EXT_LINK_CHECK
-#define EXT_LINK_CHECK 2
+#define EXT_LINK_CHECK 0
 #endif
 
 /* 
@@ -237,7 +237,7 @@ TimedAction dispatchEvents  = TimedAction( EVENT_DISP_INTERVAL,     eventDispatc
 #if DHCP == 1
 TimedAction dhcpRenew       = TimedAction( DHCP_STATUS_INTERVAL,    netDhcpRenew );
 #endif
-#if EXT_LINK_CHECK < 2
+#if EXT_LINK_CHECK != 0
 TimedAction extLinkStatus   = TimedAction( EXT_LINK_CHECK_INTERVAL, netExtLinkStatus );
 #endif
 
@@ -250,7 +250,7 @@ void loop() {
   ethLinkStatus.check();
   
   if (isEthLinkActive) {
-    #if EXT_LINK_CHECK < 2
+    #if EXT_LINK_CHECK != 0
     extLinkStatus.check();
     #endif
     #if DHCP == 1
