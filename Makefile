@@ -1,7 +1,7 @@
 FQBN    ?= fluo:avr:fluoeth
-# Auto-detect the FLUOboard serial port (FQBN match, then VID 0x2ecf fallback).
+# Auto-detect the FLUOboard serial port (FQBN match in board list).
 # Override with: make <target> PORT=/dev/ttyACMx
-PORT    ?= $(shell arduino-cli board list --format json 2>/dev/null | python3 -c "import json,sys;f='$(FQBN)';d=json.load(sys.stdin);[print(p['port']['address'])or sys.exit(0) for p in d.get('detected_ports',[]) for b in p.get('matching_boards',[]) if b.get('fqbn')==f];[print(p['port']['address'])or sys.exit(0) for p in d.get('detected_ports',[]) if p['port'].get('properties',{}).get('vid','').lower()=='0x2ecf']" 2>/dev/null)
+PORT    ?= $(shell arduino-cli board list 2>/dev/null | awk '/$(FQBN)/ {print $$1}')
 BAUD    ?= 115200
 SKETCH  ?= .
 # Build options (overridable, match #ifndef guards in fluolight.ino)
@@ -69,7 +69,7 @@ help:
 	@echo "  make compile VERBOSE=0 DHCP=1"
 	@echo "  make flash PORT=/dev/ttyACM1"
 	@echo ""
-  @echo "Build profiles are tested in CI (4 profiles)."
+	@echo "Build profiles are tested in CI (4 profiles)."
 
 compile:
 	arduino-cli config set library.enable_unsafe_install true >/dev/null 2>&1 || true
