@@ -1,5 +1,11 @@
 # FluoLight
 
+[![CI](https://github.com/log0u7/fluolight/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/log0u7/fluolight/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![C++](https://img.shields.io/badge/language-C%2B%2B-00599C)](https://isocpp.org/)
+[![Arduino](https://img.shields.io/badge/platform-Arduino-00979D)](https://www.arduino.cc/)
+[![Python](https://img.shields.io/badge/language-Python-3776AB)](https://www.python.org/)
+
 FluoLight is an Arduino-based smart lighting controller for networked status indicators. It uses addressable RGB LEDs to display different status colors based on HTTP responses from a server.
 
 ## Overview
