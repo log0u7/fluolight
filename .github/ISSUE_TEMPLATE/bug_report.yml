@@ -1,0 +1,81 @@
+name: Bug report
+description: Report a reproducible bug
+title: "[bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for filing a bug. Please include enough detail to reproduce the issue.
+        Review `CONTRIBUTING.md` before submitting.
+        Inactive issues may be marked stale after 23 days and closed 7 days later if there are still no updates.
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Pre-flight checks
+      options:
+        - label: I searched existing issues and did not find a duplicate.
+          required: true
+        - label: I verified this on the latest released version, or I explain why not below.
+          required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Version tested
+      description: Example `1.0.0` or `main@<commit>`
+      placeholder: 1.0.0
+    validations:
+      required: true
+
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, runtime version, anything that matters for the repro.
+      placeholder: Linux, <runtime 3.x>
+    validations:
+      required: true
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Bug summary
+      description: Short description of what is broken.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: Include exact commands and config snippets.
+      placeholder: |
+        1. Configure ...
+        2. Run ...
+        3. Observe ...
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs/output
+      description: Optional. Never paste API keys, tokens, or secrets.
+      render: shell
+
+  - type: textarea
+    id: no_latest_reason
+    attributes:
+      label: If not tested on the latest release, explain why
+      description: Leave blank if you tested on the current release.

@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Contribution Guidelines
+    url: https://github.com/log0u7/fluolight/blob/main/CONTRIBUTING.md
+    about: Workflow, conventional commits, quality bar and PR checklist.
+  - name: Security policy
+    url: https://github.com/log0u7/fluolight/blob/main/SECURITY.md
+    about: Report vulnerabilities privately. Do not open public issues for security problems.

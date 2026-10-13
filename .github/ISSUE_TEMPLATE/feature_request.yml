@@ -1,0 +1,62 @@
+name: Feature request
+description: Propose a new feature or behavior change
+title: "[feature]: "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the idea. Please keep the proposal scoped and concrete.
+        Review `CONTRIBUTING.md` for contribution expectations.
+        Inactive issues may be marked stale after 23 days and closed 7 days later if there are still no updates.
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Pre-flight checks
+      options:
+        - label: I searched existing issues and did not find a duplicate request.
+          required: true
+        - label: I reviewed current behavior on the latest released version.
+          required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Version reviewed
+      description: Example `1.0.0`
+      placeholder: 1.0.0
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem statement
+      description: What problem are you trying to solve?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed change
+      description: Describe the minimal safe change you want.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Optional, but useful for tradeoffs.
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: "Optional: list what must be true for this request to be considered done."
+      placeholder: |
+        - [ ] ...
+        - [ ] ...
