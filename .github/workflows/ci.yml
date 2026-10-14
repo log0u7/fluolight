@@ -12,6 +12,11 @@ jobs:
   size-report:
     name: Size report (default profile)
     runs-on: ubuntu-latest
+    # report-size-deltas posts the size comment on the PR: the default GITHUB_TOKEN
+    # lacks pull-requests write, which failed every PR with a 403.
+    permissions:
+      contents: read
+      pull-requests: write
     steps:
       - uses: actions/checkout@v4
 
