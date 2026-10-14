@@ -18,7 +18,7 @@ jobs:
       contents: read
       pull-requests: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - uses: arduino/setup-arduino-cli@v2
 
@@ -63,13 +63,13 @@ jobs:
             flags: "-DVERBOSE=3 -DDHCP=0 -DEXT_LINK_CHECK=2 -DRESET_ON_FAIL=0 -DWATCHDOG=0"
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Install arduino-cli
         uses: arduino/setup-arduino-cli@v2
 
       - name: Cache arduino15 (core + libs)
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.arduino15
           key: arduino15-fluo-${{ hashFiles('.github/workflows/ci.yml') }}
@@ -129,9 +129,9 @@ jobs:
     name: Lint Python (server scripts)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.x"
 
