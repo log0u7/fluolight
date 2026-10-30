@@ -1,7 +1,7 @@
 # FluoLight
 
 [![CI](https://github.com/log0u7/fluolight/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/log0u7/fluolight/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![C++](https://img.shields.io/badge/language-C%2B%2B-00599C)](https://isocpp.org/)
 [![Arduino](https://img.shields.io/badge/platform-Arduino-00979D)](https://www.arduino.cc/)
 [![Python](https://img.shields.io/badge/language-Python-3776AB)](https://www.python.org/)
